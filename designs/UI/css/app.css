@@ -24,6 +24,10 @@ a:hover {
     color: #179b77;
 }
 
+.row.wide {
+    max-width: 100rem;
+}
+
 
 /**********************************************************************************************/
 
@@ -397,4 +401,82 @@ textarea {
     color: #1ab188;
     border: none;
     display: block;
+}
+
+
+/**********************************************************************************************/
+
+
+/* end index page section */
+
+
+/**********************************************************************************************/
+
+
+/**********************************************************************************************/
+
+
+/*start on event management section */
+
+
+/**********************************************************************************************/
+
+.event-container {
+    position: relative;
+    height: 350px;
+    background-image: url("http://lorempixel.com/1200/500/fashion");
+    background-position: top;
+    background-size: cover;
+    z-index: 1;
+}
+
+.event-container .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    background-color: rgba(26, 177, 136, 0.32);
+}
+
+.event-container .text-display {
+    color: white;
+    text-align: center;
+    font-weight: 700;
+    z-index: 100;
+}
+
+.event-container h2 {
+    text-align: center;
+    font-size: 3.7em;
+    letter-spacing: 0.2em;
+}
+
+.event-container h4 {
+    text-align: center;
+    font-size: 1.9em;
+    letter-spacing: 0.2em;
+    padding: 0.8em;
+}
+
+.event-description .button {
+    margin: 1em 0;
+}
+
+.interactions {
+    display: block;
+    list-style: none;
+}
+
+.interactions .right {
+    display: inline-flex;
+    float: right;
+    padding: 1em;
+}
+
+.interactions a {
+    color: white;
+    margin: 1em;
+    font-size: 2em;
 }
