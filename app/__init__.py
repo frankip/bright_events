@@ -1,8 +1,7 @@
 # app/__init__.py
 
 # Third party imports
-from flask import Flask
-from flask_api import FlaskAPI
+from flask_api import FlaskAPI, status, exceptions
 
 # local imports
 from config import app_config
