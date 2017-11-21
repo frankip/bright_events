@@ -1,11 +1,15 @@
 import unittest
-
+from models import User
 class UserAuthTestcase(unittest.TestCase):
     def setUp(self):
-        pass
+        self.new_user = User()
     
+    def tearDown(self):
+        pass 
+
     def test_user_registration(self):
-        pass
+        test = self.new_user.create_account('testacc', 'password')
+        self.assertTrue(test.check_user('testacc'))
     
     def test_user_login(self):
         pass
