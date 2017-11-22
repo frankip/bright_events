@@ -9,7 +9,7 @@ events = {
     1: 'andela bootcamp',
     2: 'for loop nairobi',
 }
-def note_repr(key):
+def api_view(key):
         return {
             'text': events[key]
         }
@@ -20,4 +20,4 @@ def events_list():
     List or create notes.
     """
     # request.method == 'GET'
-    return [note_repr(idx) for idx in sorted(events.keys())]
+    return [api_view(idx) for idx in sorted(events.keys())]
