@@ -10,7 +10,7 @@ class TestEventsItem(unittest.TestCase):
         self.client = self.app.test_client
         self.new_event = {"text": "andela bootcamp"}
         
-    def test_retrieve_events(self):
+    def test_retrieve_egit logvents(self):
         resp = self.client().post('/api/events', data=self.new_event)
         # self.assertEqual(resp.status_code, 201)
         resp = self.client().get('/api/events')
