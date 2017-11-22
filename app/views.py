@@ -7,13 +7,14 @@ from app import app
 events = {}
 def api_view(key):
         return {
-            'text': events[key]
+            'text': events[key],
+            'url': request.host_url.rstrip('/') + url_for('events_details', key=key)
         }
 
 @app.route("/api/events", methods=['GET', 'POST'])
 def events_list():
     """
-    List or create notes.
+    List or create events.
     """
     if request.method == 'POST':
         name = str(request.data.get('text',''))
@@ -28,3 +29,23 @@ def events_list():
 
     # request.method == 'GET'
     return [api_view(ids_) for ids_ in sorted(events.keys())]
+
+@app.route("/api/events/<int:key>/", methods=['GET', 'PUT','DELETE'])
+def events_details(key):
+    """
+    Retrieve, update or delete events instances.
+    """
+    if request.method == 'PUT':
+        name = str(request.data.get('text',''))
+        events[key] = name
+        return api_view(key)
+
+    elif request.method == "DELETE":
+        events.pop(key, None)
+        return '', status.HTTP_204_NO_CONTENT
+
+    if key not in events:
+        raise exceptions.NotFound()
+    return api_view(key)
+
+          
