@@ -18,9 +18,11 @@ You can also view the [Designs Here](https://confident-colden-f872a4.netlify.com
 
 ## To run the api  ##
 first clone this repo to your machine 
+
  ``` git clone https://github.com/frankip/bright_events.git ```
 
 then change the directory to the project by 
+
 ``` cd bright_events ```
 
 to make sure all the dependacy modules are also present in your machine,
@@ -50,7 +52,7 @@ To test our project on your terminal run
 ``` export FLASK_APP=run.py```
 
 then
- 
+
 ``` flask run ```
 
 on your browser open up [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
