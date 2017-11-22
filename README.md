@@ -55,4 +55,4 @@ then
 
 ``` flask run ```
 
-on your browser open up [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+on your browser open up [http://127.0.0.1:5000/api/events](http://127.0.0.1:5000/api/events)
