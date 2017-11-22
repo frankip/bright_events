@@ -1,7 +1,8 @@
-# from __future__ import absolute_import
+from __future__ import absolute_import
 
 import unittest
-from ..app import app
+import os
+from app import app
 class TestEventsItem(unittest.TestCase):
 
     def setUp(self):
