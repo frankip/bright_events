@@ -17,7 +17,7 @@ You can also view the [Designs Here](https://confident-colden-f872a4.netlify.com
 ![Alt Uml-diagram](https://github.com/frankip/bright_events/blob/master/designs/wireframes/uml.jpeg)
 
 ## To run the api  ##
-first clone this repo to your machine \n
+first clone this repo to your machine 
  ``` git clone https://github.com/frankip/bright_events.git ```
 
 then change the directory to the project by 
@@ -27,20 +27,30 @@ to make sure all the dependacy modules are also present in your machine,
 we'll create a virtual enviroment and install the modules there
 
 * to create a virtual enviroment run
+
+
     ``` virtualenv -p python3 venv```
 * activating the enviroment
+
     ``` source venv/bin/activate```
 
 our virtual enviroment is now ready, we should install all dependancies for our project
 ensure you have pip installed otherwise 
-run ``` sudo apt install pip```
+run 
+
+``` sudo apt install pip```
+
 on your terminal run
+
 ``` pip install -r requirements.txt ```
 
 #run 
 To test our project on your terminal run 
+
 ``` export FLASK_APP=run.py```
-then 
+
+then
+ 
 ``` flask run ```
 
-on your browser open up[http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+on your browser open up [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
