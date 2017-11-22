@@ -3,7 +3,8 @@ import unittest
 class TestEventsItem(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.new_event = Event()
+        
     
     def test_create_event(self):
         pass
