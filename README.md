@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/frankip/bright_events.svg?branch=development)](https://travis-ci.org/frankip/bright_events)
 # bright_events
 Bright events provides a platform for event organizers to create and manage different types of events while making them easily accessible to target markets
 

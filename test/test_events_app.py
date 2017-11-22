@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import unittest
-import os
+
 from app import app
 class TestEventsItem(unittest.TestCase):
 
