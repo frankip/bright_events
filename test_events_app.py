@@ -1,3 +1,7 @@
+"""
+This file covers the test cases for 
+the events functionality
+"""
 import unittest
 
 import os
