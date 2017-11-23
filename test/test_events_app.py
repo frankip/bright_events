@@ -1,10 +1,7 @@
 from __future__ import absolute_import
 
 import unittest
-from flask_api import FlaskAPI, status, exceptions
-
-app = FlaskAPI(__name__, instance_relative_config=True)
-
+from app import app
 class TestEventsItem(unittest.TestCase):
 
     def setUp(self):
@@ -14,6 +11,7 @@ class TestEventsItem(unittest.TestCase):
 
     def test_retrieve_events(self):
         resp = self.client().post('/api/events', data=self.new_event)
+        print(resp)
         self.assertEqual(resp.status_code, 201)
         resp = self.client().get('/api/events')
         self.assertIn('andela bootcamp', str(resp.data))
