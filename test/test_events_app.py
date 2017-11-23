@@ -1,15 +1,17 @@
 from __future__ import absolute_import
 
 import unittest
+from flask_api import FlaskAPI, status, exceptions
 
-from app import app
+app = FlaskAPI(__name__, instance_relative_config=True)
+
 class TestEventsItem(unittest.TestCase):
 
     def setUp(self):
         self.app = app
         self.client = self.app.test_client
         self.new_event = {"text": "andela bootcamp"}
-        
+
     def test_retrieve_events(self):
         resp = self.client().post('/api/events', data=self.new_event)
         self.assertEqual(resp.status_code, 201)
@@ -17,10 +19,18 @@ class TestEventsItem(unittest.TestCase):
         self.assertIn('andela bootcamp', str(resp.data))
 
     def test_create_event(self):
-        pass
-    
+        resp = self.client().post('/api/events', data=self.new_event)
+        self.assertEqual(resp.status_code, 201)
+        self.assertIn('andela bootcamp', str(resp.data))
+
     def test_update_event(self):
-        pass
+        resp = self.client().post('api/events', data=self.new_event)
+        self.assertEqual(resp.status_code, 201)
+        resp = self.client().put('/api/events/1/',
+                                 data={"text": "andela bootcamp cohort 24"})
+        self.assertEqual(resp.status_code, 200)
+        new_ = self.client().get('api/events/1/')
+        self.assertIn('cohort', str(new_.data))
 
 
 if __name__ == '__main__':
