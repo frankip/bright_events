@@ -5,10 +5,10 @@ from flask import request, url_for, abort
 from flask_api import status, exceptions
 
 from app import app
-# from .models import Users
+from . models import Users
 
 events = {}
-Users = {}
+# Users = {}
 
 @app.route('/api/auth/register', methods=['POST'])
 def registration():
@@ -18,16 +18,20 @@ def registration():
     username = request.json.get('username')
     password = request.json.get('password')
 
+
+    inst = Users(username, password)
+    inst.hash_password(password)
+
     if username is None or password is None:
         abort(400)
-    if username in Users.keys():
-        abort(400)
+    inst.check_user(username)
+    # if username in Users.user_db.keys():
+    #     abort(400)
+    # else:
+    # inst = Users(username, password)
+    inst.save()
 
-    else:
-        Users[username] = password
-
-    print(Users.keys())
-    # usr_inst = Users(username, password)
+    print(Users.user_db.keys())
     return "user created", status.HTTP_201_CREATED
       
 def api_view(key):
