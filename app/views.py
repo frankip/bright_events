@@ -1,28 +1,34 @@
 """
 this files contains the logic and the routes of the app
 """
-from flask import request, url_for
+from flask import request, url_for, abort
 from flask_api import status, exceptions
 
 from app import app
-from .models import Users
+# from .models import Users
 
 events = {}
+Users = {}
 
 @app.route('/api/auth/register', methods=['POST'])
 def registration():
     """
     This function handles the user registration
     """
-    if request.method == 'POST':
-        username = str(request.data.get('username', ''))
-        password = str(request.data.get('password', ''))
+    username = request.json.get('username')
+    password = request.json.get('password')
 
-        if username in Users.user_db.keys():
-            raise exceptions.PermissionDenied(detail=None)
+    if username is None or password is None:
+        abort(400)
+    if username in Users.keys():
+        abort(400)
 
-        usr_inst = Users(username, password)
-        return Users.save(usr_inst)
+    else:
+        Users[username] = password
+
+    print(Users.keys())
+    # usr_inst = Users(username, password)
+    return "user created", status.HTTP_201_CREATED
       
 def api_view(key):
     """
