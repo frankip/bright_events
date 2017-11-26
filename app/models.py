@@ -37,3 +37,19 @@ class Users:
     @staticmethod    
     def is_active(self):
         return True
+
+class Events():
+    events_db = {}
+    def __init__(self, name):
+        self.name = name
+        self.rsvp = []
+
+    def add_event(self):
+        if not self.events_db.keys():
+            ids_ = 0
+        else:
+            ids_ = max(self.events_db.keys()) + 1
+
+        self.events_db[ids_] = self.name
+
+        return self, ids_

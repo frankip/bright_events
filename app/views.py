@@ -5,9 +5,9 @@ from flask import request, url_for, abort
 from flask_api import status, exceptions
 
 from app import app
-from . models import Users
+from . models import Users, Events
 
-events = {}
+# events = {}
 # Users = {}
 
 @app.route('/api/auth/register', methods=['POST'])
@@ -56,13 +56,13 @@ def login():
     # inst = Users(username, password)
     # Users.auth_verify_credentials(username, password, password)
 
-def api_view(key):
+def api_view():
     """
     Handles how the data will be 
     in the browsable api
     """
     return {
-        'name': events[key],
+        'name': Events.events_d.keys(),
         'url': request.host_url.rstrip('/') + url_for('events_details', key=key)
     }
 
@@ -74,16 +74,18 @@ def events_list():
     if request.method == 'POST':
         name = str(request.data.get('text', ''))
         # if the dictonary is empty assign id manualy
-        if not events.keys():
-            ids_ = 0
-        else:
-            ids_ = max(events.keys())+1
+        # if not events.keys():
+        #     ids_ = 0
+        # else:
+        #     ids_ = max(events.keys())+1
 
-        events[ids_] = name
-        return api_view(ids_), status.HTTP_201_CREATED
+        # events[ids_] = name
+        inst =  Events(name)
+        inst.add_event()
+        return api_view(), status.HTTP_201_CREATED
 
     # request.method == 'GET'
-    return [api_view(ids_) for ids_ in sorted(events.keys())]
+    return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT','DELETE'])
 def events_details(key):
