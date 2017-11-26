@@ -18,22 +18,44 @@ def registration():
     username = request.json.get('username')
     password = request.json.get('password')
 
-
+    if username is None or password is None:
+        abort(400)
+        
     inst = Users(username, password)
     inst.hash_password(password)
+    inst.check_user(username)
+    inst.save()
+
+    # print(Users.user_db.keys())
+    return "user created", status.HTTP_201_CREATED
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
 
     if username is None or password is None:
         abort(400)
-    inst.check_user(username)
-    # if username in Users.user_db.keys():
-    #     abort(400)
-    # else:
-    # inst = Users(username, password)
-    inst.save()
 
-    print(Users.user_db.keys())
-    return "user created", status.HTTP_201_CREATED
-      
+    if not Users.user_db.keys():
+            abort(400)
+
+    inst = Users(username, password)
+    if username in Users.user_db.keys():
+        if Users.user_db[username] == inst.verify_password(password):
+            return "Logged in succesfully", status.HTTP_200_OK
+        else:
+            return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
+
+    return abort(400)
+
+    # if Users.user_db[username] == inst.verify_password(password):
+    #     return "logged in successfuly"
+    # else:
+    #     return "usernam/password is incorrect"
+    # inst = Users(username, password)
+    # Users.auth_verify_credentials(username, password, password)
+
 def api_view(key):
     """
     Handles how the data will be 

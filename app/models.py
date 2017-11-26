@@ -24,10 +24,10 @@ class Users:
         '''
         hash pasword to store in db
         '''
-        print(password)
-        self.password = pwd_context.encrypt(password)
-        print (self.password)
 
+        self.password = pwd_context.encrypt(password)
+
+    
     def verify_password(self, password):
         '''
         check pasword provided with hash in db
