@@ -22,7 +22,7 @@ def registration():
         abort(400)
         
     inst = Users(username, password)
-    inst.hash_password(password)
+    # inst.hash_password(password)
     inst.check_user(username)
     inst.save()
 
@@ -42,7 +42,7 @@ def login():
 
     inst = Users(username, password)
     if username in Users.user_db.keys():
-        if Users.user_db[username] == inst.verify_password(password):
+        if Users.user_db[username] == password:
             return "Logged in succesfully", status.HTTP_200_OK
         else:
             return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
@@ -73,13 +73,6 @@ def events_list():
     """
     if request.method == 'POST':
         name = str(request.data.get('text', ''))
-        # # if the dictonary is empty assign id manualy
-        # if not events.keys():
-        #     ids_ = 0
-        # else:
-        #     ids_ = max(events.keys())+1
-
-        # events[ids_] = name
         inst = Events(name)
         ids_= inst.add_event()
         return api_view(ids_), status.HTTP_201_CREATED
