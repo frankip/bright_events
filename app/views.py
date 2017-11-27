@@ -22,11 +22,10 @@ def registration():
         abort(400)
         
     inst = Users(username, password)
-    inst.hash_password(password)
+    # inst.hash_password(password)
     inst.check_user(username)
     inst.save()
 
-    # print(Users.user_db.keys())
     return "user created", status.HTTP_201_CREATED
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -42,12 +41,13 @@ def login():
 
     inst = Users(username, password)
     if username in Users.user_db.keys():
-        if Users.user_db[username] == inst.verify_password(password):
+
+        if inst.user_db[username] == password:
             return "Logged in succesfully", status.HTTP_200_OK
         else:
             return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
-    return abort(400)
+    return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
     # if Users.user_db[username] == inst.verify_password(password):
     #     return "logged in successfuly"

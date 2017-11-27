@@ -32,7 +32,8 @@ class Users:
         '''
         check pasword provided with hash in db
         '''
-        return pwd_context.verify(password, self.password)
+        pass
+        # return pwd_context.verify(password, self.password)
 
     @staticmethod    
     def is_active(self):
@@ -52,4 +53,15 @@ class Events():
 
         self.events_db[ids_] = self.name
 
-        return self, ids_
+        return api_view(ids_) 
+
+    def api_view():
+        pass
+    # """
+    # Handles how the data will be 
+    # in the browsable api
+    # """
+    # return {
+    # 'name': self.events_db.keys(),
+    # 'url': request.host_url.rstrip('/') + url_for('events_details', key=key)
+    # }
