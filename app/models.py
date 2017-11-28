@@ -99,16 +99,10 @@ class Users:
     @staticmethod    
     def is_active(self):
         return True
-
-<<<<<<< HEAD
-class Events():
-    events_db = {}
-=======
-
+    
 class Events():
     events_db = {}
 
->>>>>>> 829c1eb50e91c597ce84a28be13be356b270e209
     def __init__(self, name):
         self.name = name
         self.rsvp = []
@@ -120,20 +114,6 @@ class Events():
             ids_ = max(self.events_db.keys()) + 1
 
         self.events_db[ids_] = self.name
-<<<<<<< HEAD
 
-        return api_view(ids_) 
-
-    def api_view():
-        pass
-    # """
-    # Handles how the data will be 
-    # in the browsable api
-    # """
-    # return {
-    # 'name': self.events_db.keys(),
-    # 'url': request.host_url.rstrip('/') + url_for('events_details', key=key)
-    # }
-=======
         return ids_
->>>>>>> 829c1eb50e91c597ce84a28be13be356b270e209
+    
