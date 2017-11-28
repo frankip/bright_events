@@ -1,7 +1,7 @@
 """
 this files contains the logic and the routes of the app
 """
-from flask import request, url_for, abort, g
+from flask import request, url_for, abort, g, jsonify, session
 from flask_api import status, exceptions
 
 from app import app
@@ -24,19 +24,18 @@ def registration():
     user = Users(username, password)
     # inst.hash_password(password)
     user.check_user(username)
-    user.save()
-    Users.user_db['user'] = user
-    # sessions['user'] = inst
+    cur_user = user.save()
+    # print (cur_user.username)
+    # session['user'] = cur_user.username
 
-    print(Users.user_db.__repr__())
-    return {'username': user.username}, status.HTTP_201_CREATED
+    return {'username': cur_user.username}, status.HTTP_201_CREATED
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     username = request.json.get('username')
     password = request.json.get('password')
 
-    user = Users(username, password)
+
     if username is None or password is None:
         abort(400)
 
@@ -47,6 +46,7 @@ def login():
     if username in Users.user_db.keys():
         if Users.user_db[username] == password:
             g.user = user
+            session['user'] = g.user.username
             return {'logged in': g.user.username}, status.HTTP_200_OK
         else:
             return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
@@ -54,8 +54,21 @@ def login():
     return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
 
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    if 'user' not in session:
+        return "you have to login first"
+    else:
+        session.pop('user')
+        return "you have been logged out"
+
 # app.route('/api/auth/reset-password', methods=['POST'])
 # def reset_password():
+
+@app.route('/api/token')
+def get_auth_token():
+    token = g.user.generate_auth_token()
+    return jsonify({'token': token.decode('ascii')})
 
 def api_view(key):
     """
