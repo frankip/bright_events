@@ -1,7 +1,7 @@
 """
 this files contains the logic and the routes of the app
 """
-from flask import request, url_for, abort
+from flask import request, url_for, abort, g, jsonify, session
 from flask_api import status, exceptions
 
 from app import app
@@ -20,18 +20,17 @@ def registration():
 
     if username is None or password is None:
         abort(400)
-        
-    inst = Users(username, password)
-    # inst.hash_password(password)
-    inst.check_user(username)
-    inst.save()
+    user = Users(username, password)
+    user.check_user(username)
+    cur_user = user.save()
 
-    return "user created", status.HTTP_201_CREATED
+    return {'username': cur_user.username}, status.HTTP_201_CREATED
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     username = request.json.get('username')
     password = request.json.get('password')
+
 
     if username is None or password is None:
         abort(400)
@@ -39,30 +38,41 @@ def login():
     if not Users.user_db.keys():
             abort(400)
 
-    inst = Users(username, password)
+    user = Users(username, password)
     if username in Users.user_db.keys():
-
-        if inst.user_db[username] == password:
-            return "Logged in succesfully", status.HTTP_200_OK
+        if Users.user_db[username] == password:
+            g.user = user
+            session['user'] = g.user.username
+            return {'logged in': g.user.username}, status.HTTP_200_OK
         else:
             return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
     return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
-    # if Users.user_db[username] == inst.verify_password(password):
-    #     return "logged in successfuly"
-    # else:
-    #     return "usernam/password is incorrect"
-    # inst = Users(username, password)
-    # Users.auth_verify_credentials(username, password, password)
 
-def api_view():
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    if 'user' not in session:
+        return "you have to login first"
+    else:
+        session.pop('user')
+        return "you have been logged out"
+
+# app.route('/api/auth/reset-password', methods=['POST'])
+# def reset_password():
+
+@app.route('/api/token')
+def get_auth_token():
+    token = g.user.generate_auth_token()
+    return jsonify({'token': token.decode('ascii')})
+
+def api_view(key):
     """
     Handles how the data will be 
     in the browsable api
     """
     return {
-        'name': Events.events_d.keys(),
+        'name': Events.events_db[key],
         'url': request.host_url.rstrip('/') + url_for('events_details', key=key)
     }
 
@@ -73,16 +83,9 @@ def events_list():
     """
     if request.method == 'POST':
         name = str(request.data.get('text', ''))
-        # if the dictonary is empty assign id manualy
-        # if not events.keys():
-        #     ids_ = 0
-        # else:
-        #     ids_ = max(events.keys())+1
-
-        # events[ids_] = name
-        inst =  Events(name)
-        inst.add_event()
-        return api_view(), status.HTTP_201_CREATED
+        inst = Events(name)
+        ids_= inst.add_event()
+        return api_view(ids_), status.HTTP_201_CREATED
 
     # request.method == 'GET'
     return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
@@ -94,13 +97,13 @@ def events_details(key):
     """
     if request.method == 'PUT':
         name = str(request.data.get('text', ''))
-        events[key] = name
+        Events.events_db[key] = name
         return api_view(key)
 
     elif request.method == "DELETE":
-        events.pop(key, None)
+        Events.events_db.pop(key, None)
         return '', status.HTTP_204_NO_CONTENT
 
-    if key not in events:
+    if key not in Events.events_db:
         raise exceptions.NotFound()
     return api_view(key)

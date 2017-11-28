@@ -8,6 +8,7 @@ from config import app_config
 
 # Initialize the app
 app = FlaskAPI(__name__, instance_relative_config=True)
+app.secret_key = "string"
 
 # Load the views
 from app import views
