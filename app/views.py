@@ -1,7 +1,7 @@
 """
 this files contains the logic and the routes of the app
 """
-from flask import request, url_for, abort
+from flask import request, url_for, abort, g
 from flask_api import status, exceptions
 
 from app import app
@@ -21,40 +21,41 @@ def registration():
     if username is None or password is None:
         abort(400)
         
-    inst = Users(username, password)
+    user = Users(username, password)
     # inst.hash_password(password)
-    inst.check_user(username)
-    inst.save()
+    user.check_user(username)
+    user.save()
+    Users.user_db['user'] = user
+    # sessions['user'] = inst
 
-    # print(Users.user_db.keys())
-    return "user created", status.HTTP_201_CREATED
+    print(Users.user_db.__repr__())
+    return {'username': user.username}, status.HTTP_201_CREATED
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     username = request.json.get('username')
     password = request.json.get('password')
 
+    user = Users(username, password)
     if username is None or password is None:
         abort(400)
 
     if not Users.user_db.keys():
             abort(400)
 
-    inst = Users(username, password)
+    user = Users(username, password)
     if username in Users.user_db.keys():
         if Users.user_db[username] == password:
-            return "Logged in succesfully", status.HTTP_200_OK
+            g.user = user
+            return {'logged in': g.user.username}, status.HTTP_200_OK
         else:
             return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
-    return abort(400)
+    return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
-    # if Users.user_db[username] == inst.verify_password(password):
-    #     return "logged in successfuly"
-    # else:
-    #     return "usernam/password is incorrect"
-    # inst = Users(username, password)
-    # Users.auth_verify_credentials(username, password, password)
+
+# app.route('/api/auth/reset-password', methods=['POST'])
+# def reset_password():
 
 def api_view(key):
     """
@@ -87,11 +88,11 @@ def events_details(key):
     """
     if request.method == 'PUT':
         name = str(request.data.get('text', ''))
-        events[key] = name
+        Events.events_db[key] = name
         return api_view(key)
 
     elif request.method == "DELETE":
-        events.pop(key, None)
+        Events.events_db.pop(key, None)
         return '', status.HTTP_204_NO_CONTENT
 
     if key not in events:

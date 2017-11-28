@@ -1,12 +1,20 @@
+import itertools
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
+
 from passlib.apps import custom_app_context as pwd_context
 from flask import abort
 class Users:
     user_db = {}
+    id_generator = itertools.count(1)
     def __init__(self, username, password):
+        self.id = next(self.id_generator)
         self.username = username
         self.password = password
+        
 
     def save(self):
+        self.user_db[self.id] = self
         self.user_db[self.username] = self.password
         return self
 
