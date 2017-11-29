@@ -3,22 +3,24 @@ from __future__ import absolute_import
 import unittest
 import json
 from app import app
+
+
 class UserAuthTestcase(unittest.TestCase):
-    
+
     def setUp(self):
         self.app = app
         self.client = self.app.test_client
         self.user_data = {'username': 'test@example.com',
-            'password': 'test_password'
-        }
+                          'password': 'test_password'
+                          }
 
     def test_user_registration(self):
         """Test user registration works correcty."""
-        # resp = self.client().post('/api/auth/register', data=self.user_data)
-        # self.assertEqual(resp.status_code, 201)
-        # result = json.loads(resp.data.decode())
-        # self.assertEqual(result['message'], "you registered succesfully")
-    
+        resp = self.client().post('/api/auth/register', data=self.user_data)
+        result = json.loads(resp.data.decode())
+        self.assertEqual(result['username'], "test@example.com")
+        self.assertEqual(resp.status_code, 201)
+
     def test_user_login(self):
         pass
 
@@ -29,8 +31,11 @@ class UserAuthTestcase(unittest.TestCase):
         """Test that a user cannot be registered twice."""
         resp = self.client().post('/api/auth/register', data=self.user_data)
         self.assertEqual(resp.status_code, 201)
-        resp_2 = self.client().post('/api/auth/register', data=self.user_data)
+        resp_2  = self.client().post('/api/auth/register',data=self.user_data)
         self.assertEqual(resp_2.status_code, 202)
+        result = json.loads(resp_2.data.decode())
+        self.assertEqual(result['message'], "User already exists. Please login.")
+
 
 
 if __name__ == '__main__':

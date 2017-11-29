@@ -28,7 +28,7 @@ class Users:
         checks if its in the dictonary
         '''
         if username in self.user_db.keys():
-            return abort(400)
+            return "User already exists. Please login.", 201
         else:
             return False
         
