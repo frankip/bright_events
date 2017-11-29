@@ -112,13 +112,12 @@ class Events():
         self.date = date
         self.rsvp = []
 
-    def add_event(self):
-        # if not self.events_db.keys():
-        #     ids_ = 0
-        # else:
-        #     ids_ = max(self.events_db.keys()) + 1
-
-        self.events_db[self.ids_] = json.dumps({self.name, self.location, self.date})
-
+    def add_event(self,name, location, date):
+        new_data = dict(
+            name=name,
+            location=location,
+            date=date
+        )
+        self.events_db[self.ids_] = new_data
         return self.ids_
     

@@ -82,11 +82,13 @@ def events_list():
     List or create events.
     """
     if request.method == 'POST':
-        name = request.json.get('text', '')
-        location = request.json.get('location', '')
-        date = request.json.get('date', '')
+        name = str(request.data.get('text', ''))
+        location = str(request.data.get('location', ''))
+        date = str(request.data.get('date', ''))
+
         inst = Events(name, location, date)
-        ids_= inst.add_event()
+        ids_= inst.add_event(name, location, date)
+        
         return api_view(ids_), status.HTTP_201_CREATED
 
     # request.method == 'GET'
@@ -99,7 +101,14 @@ def events_details(key):
     """
     if request.method == 'PUT':
         name = str(request.data.get('text', ''))
-        Events.events_db[key] = name
+        location = str(request.data.get('location', ''))
+        date = str(request.data.get('date', ''))
+        new_dat = dict(
+            name=name,
+            location=location,
+            date=date
+        )
+        Events.events_db[key] = new_dat
         return api_view(key)
 
     elif request.method == "DELETE":
