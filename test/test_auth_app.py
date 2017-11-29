@@ -13,11 +13,14 @@ class UserAuthTestcase(unittest.TestCase):
         }
 
     def test_user_registration(self):
+        user_data = {'username': 'test.com',
+                     'password': 'test_password'
+                     }
         """Test user registration works correcty."""
-        # resp = self.client().post('/api/auth/register', data=self.user_data)
-        # self.assertEqual(resp.status_code, 201)
-        # result = json.loads(resp.data.decode())
-        # self.assertEqual(result['message'], "you registered succesfully")
+        resp = self.client().post('/api/auth/register', data=user_data)
+        self.assertEqual(resp.status_code, 201)
+        result = json.loads(resp.data.decode())
+        self.assertEqual(result['username'], "test.com")
     
     def test_user_login(self):
         pass
@@ -31,6 +34,8 @@ class UserAuthTestcase(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         resp_2 = self.client().post('/api/auth/register', data=self.user_data)
         self.assertEqual(resp_2.status_code, 202)
+        # result = json.dumps(resp_2.data.decode())
+        # self.assertEqual(result['message'], "User already exists. Please login.")
 
 
 if __name__ == '__main__':
