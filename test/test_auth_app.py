@@ -36,6 +36,9 @@ class UserAuthTestcase(unittest.TestCase):
             db.create_all()
 
     def test_user_registration(self):
+        user_data = {'username': 'test.com',
+                     'password': 'test_password'
+                     }
         """Test user registration works correcty."""
         resp = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp.status_code, 201)
