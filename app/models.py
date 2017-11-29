@@ -84,7 +84,7 @@ class Users(db.Model):
 
     @staticmethod
     def decode_token(token):
-        """Decodes the access token from the Authorization header."""
+        '''Decodes the access token from the Authorization header.'''
         try:
             # try to decode the token using our SECRET variable
             payload = jwt.decode(token, app.secret_key)
