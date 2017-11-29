@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/frankip/bright_events.svg?branch=development)](https://travis-ci.org/frankip/bright_events)
-[![Coverage Status](https://coveralls.io/repos/github/frankip/bright_events/badge.svg?branch=master)](https://coveralls.io/github/frankip/bright_events?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/frankip/bright_events/badge.svg?branch=development)](https://coveralls.io/github/frankip/bright_events?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/maintainability)](https://codeclimate.com/github/frankip/bright_events/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/test_coverage)](https://codeclimate.com/github/frankip/bright_events/test_coverage)
 # bright_events
