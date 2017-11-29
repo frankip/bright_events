@@ -15,13 +15,14 @@ def registration():
     """
     This function handles the user registration
     """
-    username = request.json.get('username')
-    password = request.json.get('password')
+    username = request.data.get('username')
+    password = request.data.get('password')
 
     if username is None or password is None:
         abort(400)
     user = Users(username, password)
-    user.check_user(username)
+    if username in Users.user_db.keys():
+            return "User already exists. Please login.", status.HTTP_202_ACCEPTED
     cur_user = user.save()
 
     return {'username': cur_user.username}, status.HTTP_201_CREATED
