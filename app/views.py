@@ -50,7 +50,6 @@ def login():
 
     return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
 
-
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
     if 'user' not in session:
@@ -83,8 +82,10 @@ def events_list():
     List or create events.
     """
     if request.method == 'POST':
-        name = str(request.data.get('text', ''))
-        inst = Events(name)
+        name = request.json.get('text', '')
+        location = request.json.get('location', '')
+        date = request.json.get('date', '')
+        inst = Events(name, location, date)
         ids_= inst.add_event()
         return api_view(ids_), status.HTTP_201_CREATED
 

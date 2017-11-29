@@ -1,11 +1,12 @@
 import itertools
 import jwt
+import json
 from datetime import datetime, timedelta
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
 from passlib.apps import custom_app_context as pwd_context
-from flask import abort, current_app
+from flask import abort, current_app, jsonify
 
 from app import app
 class Users:
@@ -102,18 +103,22 @@ class Users:
     
 class Events():
     events_db = {}
+    id_generator = itertools.count(1)
 
-    def __init__(self, name):
+    def __init__(self, name, location, date):
+        self.ids_ = next(self.id_generator)
         self.name = name
+        self.location = location
+        self.date = date
         self.rsvp = []
 
     def add_event(self):
-        if not self.events_db.keys():
-            ids_ = 0
-        else:
-            ids_ = max(self.events_db.keys()) + 1
+        # if not self.events_db.keys():
+        #     ids_ = 0
+        # else:
+        #     ids_ = max(self.events_db.keys()) + 1
 
-        self.events_db[ids_] = self.name
+        self.events_db[self.ids_] = json.dumps({self.name, self.location, self.date})
 
-        return ids_
+        return self.ids_
     
