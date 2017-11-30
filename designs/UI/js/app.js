@@ -40,7 +40,7 @@ $(document).ready(function () {
 var loadfunctionAjax = function () {
     $.ajax({
         type: 'GET'
-        , url: 'http://127.0.0.1:5000/api/events'
+        , url: 'https://eventsbright.herokuapp.com/api/events'
         , contentType: "application/json; charset=utf-8"
         , dataType: "json"
         , success: function (data) {
