@@ -1,7 +1,5 @@
 # run.py
 
-import os
-
 from app import app
 
 #config_name = os.getenv('FLASK_CONFIG')
