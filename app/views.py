@@ -7,14 +7,9 @@ from flask_api import status, exceptions
 from app import app
 from . models import Users, Events
 
-# events = {}
-# Users = {}
-
 @app.route('/api/auth/register', methods=['POST'])
 def registration():
-    """
-    This function handles the user registration
-    """
+    """ This function handles the user registration"""
     username = request.data.get('username')
     password = request.data.get('password')
 
@@ -35,7 +30,7 @@ def login():
 
 
     if username is None or password is None:
-        message = {'message': 'message cannot be empty'}
+        message = {'message': 'inputs cannot be empty'}
         return message , status.HTTP_400_BAD_REQUEST
 
     if not Users.user_db.keys():
@@ -65,12 +60,6 @@ def logout():
 # app.route('/api/auth/reset-password', methods=['POST'])
 # def reset_password():
 
-@app.route('/api/token')
-def get_auth_token():
-    """Generates the access token to be used as the Authorization header"""
-    token = g.user.generate_auth_token()
-    return jsonify({'token': token.decode('ascii')})
-
 def api_view(key):
     """Handles how the data will be in the browsable api"""
     return {
@@ -83,11 +72,14 @@ def api_view(key):
 def events_list():
     """List or create events."""
     if request.method == 'POST':
-        name = str(request.data.get('text', ''))
-        location = str(request.data.get('location', ''))
-        date = str(request.data.get('date', ''))
+        event = request.data.get('event')
+        location = request.data.get('location')
+        date = request.data.get('date')
+        
+        if event is None or location is None or date is None:
+            return {'message': 'inputs cannot be empty, please fill all inputs'}
 
-        inst = Events(name, location, date)
+        inst = Events(event, location, date)
         ids_ = inst.add_event()
         message = {"message": api_view(ids_)}
         return message, status.HTTP_201_CREATED
@@ -130,7 +122,9 @@ def rsvp_event(key):
     events = Events.events_db[key]
     rsvp_list = events['rsvp']
     if request.method == "POST":
-        name = str(request.data.get('name', ''))
-        rsvp_list.append(name)
+        email = request.data.get('email')
+        if email is None:
+            return{"message": "can not rsvp empty inputs"}
+        rsvp_list.append(email)
         return {'message':rsvp_list}, status.HTTP_201_CREATED
     return rsvp_list
