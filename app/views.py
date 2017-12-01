@@ -91,11 +91,15 @@ def events_list():
 def events_details(key):
     """Retrieve, update or delete events instances."""
     if request.method == 'PUT':
-        name = str(request.data.get('text', ''))
-        location = str(request.data.get('location', ''))
-        date = str(request.data.get('date', ''))
+        event = request.data.get('event')
+        location = request.data.get('location')
+        date = request.data.get('date')
+
+        if event is None or location is None or date is None:
+            return {'message': 'inputs cannot be empty, please fill all inputs'}
+
         new_dat = dict(
-            name=name,
+            event=event,
             location=location,
             date=date
         )
