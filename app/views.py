@@ -22,10 +22,10 @@ def registration():
         abort(400)
     user = Users(username, password)
     if username in Users.user_db.keys():
-        return "User already exists. Please login.", status.HTTP_202_ACCEPTED
-    cur_user = user.save()
-
-    return {'username': cur_user.username}, status.HTTP_201_CREATED
+        message = {"message": "User already exists. Please login."}
+        return message , status.HTTP_202_ACCEPTED
+    user.save()
+    return {'message': "user has been created"}, status.HTTP_201_CREATED
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
@@ -35,17 +35,19 @@ def login():
 
 
     if username is None or password is None:
-        return "Can not be empty", status.HTTP_400_BAD_REQUEST
+        message = {'message': 'message cannot be empty'}
+        return message , status.HTTP_400_BAD_REQUEST
 
     if not Users.user_db.keys():
-        return "You need to register first before you login", status.HTTP_400_BAD_REQUEST
+        message = {"message": "You need to register first before you login"}
+        return message, status.HTTP_400_BAD_REQUEST
 
     user = Users(username, password)
     if username in Users.user_db.keys():
         if Users.user_db[username] == password:
             g.user = user
             session['user'] = g.user.username
-            return {'logged in': g.user.username}, status.HTTP_200_OK
+            return {'message': 'you have been logged in'}, status.HTTP_200_OK
         else:
             raise exceptions.AuthenticationFailed()
     raise exceptions.AuthenticationFailed()
@@ -54,9 +56,11 @@ def login():
 def logout():
     """Handles the user logout logic"""
     if 'user' not in session:
-        return "you have to login first", status.HTTP_401_UNAUTHORIZED
+        message = {"message": "you have to login first"}
+        return message , status.HTTP_401_UNAUTHORIZED
     session.pop('user')
-    return "you have been logged out", status.HTTP_200_OK
+    message = {"message": "you have been logged out"}
+    return message , status.HTTP_200_OK
 
 # app.route('/api/auth/reset-password', methods=['POST'])
 # def reset_password():
@@ -85,8 +89,8 @@ def events_list():
 
         inst = Events(name, location, date)
         ids_ = inst.add_event()
-
-        return api_view(ids_), status.HTTP_201_CREATED
+        message = {"message": api_view(ids_)}
+        return message, status.HTTP_201_CREATED
 
     # request.method == 'GET'
     return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
@@ -104,12 +108,13 @@ def events_details(key):
             date=date
         )
         Events.events_db[key] = new_dat
-        print(Events.events_db[key])
-        return api_view(key)
+        message = {"message": api_view(key)}
+        return message, status.HTTP_201_CREATED
 
     elif request.method == "DELETE":
         Events.events_db.pop(key, None)
-        return 'deleted', status.HTTP_204_NO_CONTENT
+        message = {"message": "Deleted succesfully"}
+        return message, status.HTTP_204_NO_CONTENT
 
     if key not in Events.events_db:
         raise exceptions.NotFound()
@@ -127,5 +132,5 @@ def rsvp_event(key):
     if request.method == "POST":
         name = str(request.data.get('name', ''))
         rsvp_list.append(name)
-        return rsvp_list
+        return {'message':rsvp_list}, status.HTTP_201_CREATED
     return rsvp_list
