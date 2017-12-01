@@ -1,14 +1,18 @@
+from datetime import datetime, timedelta
 import itertools
 import jwt
-from datetime import datetime, timedelta
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
 from passlib.apps import custom_app_context as pwd_context
-from flask import abort, current_app
+from flask import current_app
 
 from app import app
 class Users:
+    """
+    This class handles all the logic and methods
+    associated with a user
+    """
     user_db = {}
     id_generator = itertools.count(1)
     def __init__(self, username, password):
@@ -16,8 +20,8 @@ class Users:
         self.username = username
         self.password = password
         
-
     def save(self):
+        '''Saves the data to the datastructure dictonary'''
         # self.user_db[self.id] = {self.username:self.password}
         self.user_db[self.username] = self.password
         return self
@@ -29,17 +33,13 @@ class Users:
         '''
         if username in self.user_db.keys():
             return "User already exists. Please login.", 201
-        else:
-            return False
-        
+        return False
     def hash_password(self, password):
         '''
         hash pasword to store in db
         '''
 
         self.password = pwd_context.encrypt(password)
-
-    
     def verify_password(self, password):
         '''
         check pasword provided with hash in db
@@ -71,7 +71,7 @@ class Users:
 
     @staticmethod
     def decode_token(token):
-        """Decodes the access token from the Authorization header."""
+        '''Decodes the access token from the Authorization header.'''
         try:
             # try to decode the token using our SECRET variable
             payload = jwt.decode(token, current_app.config.get('SECRET'))
@@ -86,6 +86,7 @@ class Users:
 
     @staticmethod
     def verify_auth_token(token):
+        '''verifies the access token from the Authorization header'''
         s = Serializer(app.config.from_object('config'))
         try:
             data = s.loads(token)
@@ -93,27 +94,37 @@ class Users:
             return None  # valid token, but expired
         except BadSignature:
             return None  # invalid token
-        user = User.query.get(data['id'])
-        return user
+        # user = User.query.get(data['id'])
+        # return user
 
     @staticmethod    
     def is_active(self):
+        '''sets the is active flag to true'''
         return True
     
 class Events():
+    '''
+    This class hold the logic and methods for the
+    events
+    '''
     events_db = {}
+    id_generator = itertools.count(1)
 
-    def __init__(self, name):
+    def __init__(self, name, location, date):
+        self.ids_ = next(self.id_generator)
         self.name = name
+        self.location = location
+        self.date = date
         self.rsvp = []
 
     def add_event(self):
-        if not self.events_db.keys():
-            ids_ = 0
-        else:
-            ids_ = max(self.events_db.keys()) + 1
+        '''handles adding events to dictonary'''
+        new_data = dict(
+            name=self.name,
+            location=self.location,
+            date=self.date,
+            rsvp=self.rsvp
+        )
+        self.events_db[self.ids_] = new_data
+        return self.ids_
 
-        self.events_db[ids_] = self.name
-
-        return ids_
-    

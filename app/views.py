@@ -22,22 +22,23 @@ def registration():
         abort(400)
     user = Users(username, password)
     if username in Users.user_db.keys():
-            return "User already exists. Please login.", status.HTTP_202_ACCEPTED
+        return "User already exists. Please login.", status.HTTP_202_ACCEPTED
     cur_user = user.save()
 
     return {'username': cur_user.username}, status.HTTP_201_CREATED
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
+    """Handles the user login logic """
     username = request.json.get('username')
     password = request.json.get('password')
 
 
     if username is None or password is None:
-        abort(400)
+        return "Can not be empty", status.HTTP_400_BAD_REQUEST
 
     if not Users.user_db.keys():
-            abort(400)
+        return "You need to register first before you login", status.HTTP_400_BAD_REQUEST
 
     user = Users(username, password)
     if username in Users.user_db.keys():
@@ -46,65 +47,85 @@ def login():
             session['user'] = g.user.username
             return {'logged in': g.user.username}, status.HTTP_200_OK
         else:
-            return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
-
-    return "username/password incorrect", status.HTTP_401_UNAUTHORIZED
-
+            raise exceptions.AuthenticationFailed()
+    raise exceptions.AuthenticationFailed()
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
+    """Handles the user logout logic"""
     if 'user' not in session:
-        return "you have to login first"
-    else:
-        session.pop('user')
-        return "you have been logged out"
+        return "you have to login first", status.HTTP_401_UNAUTHORIZED
+    session.pop('user')
+    return "you have been logged out", status.HTTP_200_OK
 
 # app.route('/api/auth/reset-password', methods=['POST'])
 # def reset_password():
 
 @app.route('/api/token')
 def get_auth_token():
+    """Generates the access token to be used as the Authorization header"""
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode('ascii')})
 
 def api_view(key):
-    """
-    Handles how the data will be 
-    in the browsable api
-    """
+    """Handles how the data will be in the browsable api"""
     return {
-        'name': Events.events_db[key],
-        'url': request.host_url.rstrip('/') + url_for('events_details', key=key)
+        'rsvp_url': request.host_url.rstrip('/') + url_for('rsvp_event', key=key),
+        'url': request.host_url.rstrip('/') + url_for('events_details', key=key),
+        'event': Events.events_db[key],
     }
 
 @app.route("/api/events", methods=['GET', 'POST'])
 def events_list():
-    """
-    List or create events.
-    """
+    """List or create events."""
     if request.method == 'POST':
         name = str(request.data.get('text', ''))
-        inst = Events(name)
-        ids_= inst.add_event()
+        location = str(request.data.get('location', ''))
+        date = str(request.data.get('date', ''))
+
+        inst = Events(name, location, date)
+        ids_ = inst.add_event()
+
         return api_view(ids_), status.HTTP_201_CREATED
 
     # request.method == 'GET'
     return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
 
-@app.route("/api/events/<int:key>/", methods=['GET', 'PUT','DELETE'])
+@app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 def events_details(key):
-    """
-    Retrieve, update or delete events instances.
-    """
+    """Retrieve, update or delete events instances."""
     if request.method == 'PUT':
         name = str(request.data.get('text', ''))
-        Events.events_db[key] = name
+        location = str(request.data.get('location', ''))
+        date = str(request.data.get('date', ''))
+        new_dat = dict(
+            name=name,
+            location=location,
+            date=date
+        )
+        Events.events_db[key] = new_dat
+        print(Events.events_db[key])
         return api_view(key)
 
     elif request.method == "DELETE":
         Events.events_db.pop(key, None)
-        return '', status.HTTP_204_NO_CONTENT
+        return 'deleted', status.HTTP_204_NO_CONTENT
 
     if key not in Events.events_db:
         raise exceptions.NotFound()
     return api_view(key)
+
+
+@app.route("/api/events/<int:key>/rsvp", methods=['GET', 'POST'])
+def rsvp_event(key):
+    """ Handles the RSVP logic"""
+    if key not in Events.events_db:
+        raise exceptions.NotFound()
+
+    events = Events.events_db[key]
+    rsvp_list = events['rsvp']
+    if request.method == "POST":
+        name = str(request.data.get('name', ''))
+        rsvp_list.append(name)
+        return rsvp_list
+    return rsvp_list
