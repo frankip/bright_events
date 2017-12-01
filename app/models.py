@@ -10,15 +10,15 @@ class Users:
     """
     user_db = {}
     id_generator = itertools.count(1)
-    def __init__(self, username, password):
+    def __init__(self, email, password):
         self._id = next(self.id_generator)
-        self.username = username
+        self.email = email
         self.password = password
         
     def save(self):
         '''Saves the data to the datastructure dictonary'''
         # self.user_db[self.id] = {self.username:self.password}
-        self.user_db[self.username] = self.password
+        self.user_db[self.email] = self.password
         return self
 
     def check_user(self, username):

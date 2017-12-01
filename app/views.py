@@ -10,13 +10,13 @@ from . models import Users, Events
 @app.route('/api/auth/register', methods=['POST'])
 def registration():
     """ This function handles the user registration"""
-    username = request.data.get('username')
+    email = request.data.get('email')
     password = request.data.get('password')
 
-    if username is None or password is None:
+    if email is None or password is None:
         abort(400)
-    user = Users(username, password)
-    if username in Users.user_db.keys():
+    user = Users(email, password)
+    if email in Users.user_db.keys():
         message = {"message": "User already exists. Please login."}
         return message , status.HTTP_202_ACCEPTED
     user.save()
@@ -42,7 +42,7 @@ def login():
         if Users.user_db[username] == password:
             g.user = user
             session['user'] = g.user.username
-            return {'message': 'you have been logged in'}, status.HTTP_200_OK
+            return {'message': 'you have succesfully been logged in'}, status.HTTP_200_OK
         else:
             raise exceptions.AuthenticationFailed()
     raise exceptions.AuthenticationFailed()

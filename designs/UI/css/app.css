@@ -473,6 +473,7 @@ textarea {
     display: inline-flex;
     float: right;
     padding: 1em;
+    margin-right: 3em;
 }
 
 .interactions a {
