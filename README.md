@@ -29,8 +29,8 @@ then change the directory to the project by
 
 ``` cd bright_events ```
 
-to make sure all the dependacy modules are also present in your machine,
-we'll create a virtual enviroment and install the modules there
+to make sure all the packages needed to run the project present in your machine,
+we'll create a virtual enviroment and install the packages there
 
 * to create a virtual enviroment run
 
@@ -40,13 +40,13 @@ we'll create a virtual enviroment and install the modules there
 
     ``` source venv/bin/activate```
 
-our virtual enviroment is now ready, we should install all dependancies for our project
+our virtual enviroment is now ready, we should install all packages for our project
 ensure you have pip installed otherwise 
-run 
+
 
 ``` sudo apt install pip```
 
-on your terminal run
+then on your terminal run
 
 ``` pip install -r requirements.txt ```
 
@@ -60,3 +60,40 @@ then
 ``` flask run ```
 
 on your browser open up [http://127.0.0.1:5000/api/events](http://127.0.0.1:5000/api/events)
+
+### testing using post man or curl 
+
+the endpoints for the api are
+
+        POST    /api/auth/register/
+        POST    /api/auth/login/
+        POST    /api/auth/logout/
+        POST    /api/auth/reset-password/
+        POST    /api/events/
+        GET     /api/events/
+        GET     /api/events/<int:key>/
+        PUT     /api/events/<int:key>/
+        POST    /api/events/<int:key>/rsvp
+        GET    /api/events/<int:key>/rsvp
+
+## Test /api/auth/register/
+    
+    curl -H "Accept: application/json"\-H "Content-type: application/json" -X POST \
+	-d '{"email": "test@test.com", "password": "test_password"}' \
+	http://127.0.0.1:5000/api/auth/register/
+
+## TEST /api/auth/login/
+    
+    curl -H "Accept: application/json" \
+	-H "Content-type: application/json" -X POST \
+	-d '{"email": "test@test.com", "password": "test_password"}' \
+	http://127.0.0.1:5000/api/auth/login/
+
+## Test /api/events/
+
+    
+    curl -H "Accept: application/json" \
+	-H "Content-type: application/json" -X POST \
+	-d '{"title": "Fruits"}' \
+	http://127.0.0.1:5000/api/events/
+
