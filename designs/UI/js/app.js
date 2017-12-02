@@ -40,19 +40,19 @@ $(document).ready(function () {
 var loadfunctionAjax = function () {
     $.ajax({
         type: 'GET'
-        , url: 'https://eventsbright.herokuapp.com/api/events'
+        , url: 'http://127.0.0.1:5000/api/events'
         , contentType: "application/json; charset=utf-8"
         , dataType: "json"
         , success: function (data) {
             console.log(data)
             var trHTML = '';
             $.each(data, function (i, item) {
-                console.log(data[i].event.name)
+                console.log(data[i].event.event)
                 console.log(data[i].url)
                 trHTML += '<div class ="column" >'+
                             '<div class ="callout" >'+
-                                '<img class = "thumbnail" src = "http://lorempixel.com/400/200/nightlife" alt="image-one">'+
-                                    '<h5>'+data[i].event.name+'</h5>' +
+                                '<img class = "thumbnail" src = "http://lorempixel.com/400/200/nightlife/'+i+'" alt="image-one">'+
+                                    '<h5>'+data[i].event.event+'</h5>' +
                                     '<i class="fa fa-calendar fa-2x fa-fw" aria-hidden="true"></i>'+
                                     '<p class="small">'+data[i].event.date+'</p>'+
                                 '<br>'+

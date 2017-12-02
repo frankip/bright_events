@@ -68,9 +68,9 @@ class Events():
     events_db = {}
     id_generator = itertools.count(1)
 
-    def __init__(self, name, location, date):
+    def __init__(self, event, location, date):
         self.ids_ = next(self.id_generator)
-        self.name = name
+        self.event = event
         self.location = location
         self.date = date
         self.rsvp = []
@@ -78,7 +78,7 @@ class Events():
     def add_event(self):
         '''handles adding events to dictonary'''
         new_data = dict(
-            name=self.name,
+            event=self.event,
             location=self.location,
             date=self.date,
             rsvp=self.rsvp
