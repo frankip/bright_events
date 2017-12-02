@@ -64,6 +64,7 @@ def logout():
     message = {"message": "you have been logged out"}
     return message, status.HTTP_200_OK
 
+
 @app.route('/api/auth/reset-password', methods=['POST'])
 def reset_password():
     """Handles Resetting user Password"""
@@ -73,6 +74,7 @@ def reset_password():
         print(Users.user_db['user'])
         return {"message": "you have succesfuly reset your password"}
     return {"message": "you need to log in first to reset password"}
+
 
 @app.route("/api/events", methods=['GET', 'POST'])
 def events_list():
