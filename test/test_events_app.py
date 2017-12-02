@@ -5,20 +5,26 @@ from __future__ import absolute_import
 
 import unittest
 from app import app
+
+
 class TestEventsItem(unittest.TestCase):
     """This class represents the Events test case"""
+
     def setUp(self):
         """Set up test variables."""
         self.app = app
         self.client = self.app.test_client
-        self.new_event = {"event": "Barbecue party",
-                          "location": "nairobi",
-                          "date": "12/12/2017"
-                         }
-        self.updat_event = {"event": "Burger Fest",
-                            "location": "nairobi",
-                            "date": "12/12/2017"
-                           }
+        self.new_event = {
+            "event": "Barbecue party",
+            "location": "nairobi",
+            "date": "12/12/2017"
+        }
+        self.update_event = {
+            "event": "Burger Fest",
+            "location": "Ngong",
+            "date": "12/12/2017"
+        }
+
     def test_retrieve_events(self):
         """Test API can retrieve events (GET request)."""
         resp = self.client().post('/api/events', data=self.new_event)
@@ -36,10 +42,9 @@ class TestEventsItem(unittest.TestCase):
         """Test API can edit an existing event. (PUT request)"""
         resp = self.client().post('api/events', data=self.new_event)
         self.assertEqual(resp.status_code, 201)
-        resp = self.client().put('/api/events/1/',
-                                 data=self.updat_event)
+        resp = self.client().put('api/events/4/', data=self.update_event)
         self.assertEqual(resp.status_code, 201)
-        new_ = self.client().get('api/events/1/')
+        new_ = self.client().get('api/events/4/')
         self.assertIn('Burger', str(new_.data))
 
     def test_event_deletion(self):
@@ -53,8 +58,6 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(result.status_code, 404)
 
 
-
-
 if __name__ == '__main__':
     unittest.main()
-
+    
