@@ -11,15 +11,19 @@ from . models import Users, Events
 @app.route('/api/auth/register', methods=['POST'])
 def registration():
     """ This function handles the user registration"""
+    if "user" in session:
+        return {"message": "you are already logged in"}
+    fname = request.data.get('first_name')
+    lname = request.data.get('last_name')
     email = request.data.get('email')
     password = request.data.get('password')
 
     if email is None or password is None:
         abort(400)
-    user = Users(email, password)
+    user = Users(fname, lname, email, password)
     if email in Users.user_db.keys():
         message = {"message": "User already exists. Please login."}
-        return message,status.HTTP_202_ACCEPTED
+        return message, status.HTTP_202_ACCEPTED
     user.save()
     return {'message': "user has been created"}, status.HTTP_201_CREATED
 
@@ -38,11 +42,10 @@ def login():
         message = {"message": "You need to register first before you login"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    user = Users(email, password)
+    # user = Users(email, password)
     if email in Users.user_db.keys():
         if Users.user_db[email] == password:
-            g.user = user
-            session['user'] = g.user.email
+            session['user'] = email
             return {
                 'message': 'you have succesfully been logged in'}, status.HTTP_200_OK
         else:
@@ -96,6 +99,9 @@ def events_list():
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""
+    if key not in Events.events_db:
+        raise exceptions.NotFound()
+
     if request.method == 'PUT':
         event = request.data.get('event')
         location = request.data.get('location')
@@ -118,9 +124,6 @@ def events_details(key):
         message = {"message": "Deleted succesfully"}
         return message, status.HTTP_204_NO_CONTENT
 
-    if key not in Events.events_db:
-        raise exceptions.NotFound()
-    return api_view(key)
 
 
 @app.route("/api/events/<int:key>/rsvp", methods=['GET', 'POST'])
