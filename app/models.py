@@ -21,12 +21,12 @@ class Users:
         self.user_db[self.email] = self.password
         return self
 
-    def check_user(self, username):
+    def check_user(self, email):
         '''
         This method takes in a username and
         checks if its in the dictonary
         '''
-        if username in self.user_db.keys():
+        if email in self.user_db.keys():
             return "User already exists. Please login.", 201
         return False
     def hash_password(self, password):
