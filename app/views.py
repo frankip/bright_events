@@ -1,7 +1,7 @@
 """
 this files contains the logic and the routes of the app
 """
-from flask import request, url_for, abort, g, session
+from flask import request, url_for, abort, session
 from flask_api import status, exceptions
 
 from app import app
@@ -44,6 +44,7 @@ def login():
 
     # user = Users(email, password)
     if email in Users.user_db.keys():
+        print(Users.user_db[email])
         if Users.user_db[email] == password:
             session['user'] = email
             return {
@@ -63,18 +64,15 @@ def logout():
     message = {"message": "you have been logged out"}
     return message, status.HTTP_200_OK
 
-# app.route('/api/auth/reset-password', methods=['POST'])
-# def reset_password():
-
-
-def api_view(key):
-    """Handles how the data will be in the browsable api"""
-    return {
-        'rsvp_url': request.host_url.rstrip('/') + url_for('rsvp_event', key=key),
-        'url': request.host_url.rstrip('/') + url_for('events_details', key=key),
-        'event': Events.events_db[key],
-    }
-
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    """Handles Resetting user Password"""
+    if 'user' in session:
+        password = request.data.get('password')
+        Users.user_db['user'] = password
+        print(Users.user_db['user'])
+        return {"message": "you have succesfuly reset your password"}
+    return {"message": "you need to log in first to reset password"}
 
 @app.route("/api/events", methods=['GET', 'POST'])
 def events_list():
@@ -124,6 +122,7 @@ def events_details(key):
         message = {"message": "Deleted succesfully"}
         return message, status.HTTP_204_NO_CONTENT
 
+    return api_view(key)
 
 
 @app.route("/api/events/<int:key>/rsvp", methods=['GET', 'POST'])
@@ -141,3 +140,12 @@ def rsvp_event(key):
         rsvp_list.append(email)
         return {'message': rsvp_list}, status.HTTP_201_CREATED
     return rsvp_list
+
+
+def api_view(key):
+    """Handles how the data will be in the browsable api"""
+    return {
+        'rsvp_url': request.host_url.rstrip('/') + url_for('rsvp_event', key=key),
+        'url': request.host_url.rstrip('/') + url_for('events_details', key=key),
+        'event': Events.events_db[key],
+    }
