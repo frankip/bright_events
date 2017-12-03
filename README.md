@@ -2,7 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/frankip/bright_events/badge.svg?branch=v2_events)](https://coveralls.io/github/frankip/bright_events?branch=v2_events)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/maintainability)](https://codeclimate.com/github/frankip/bright_events/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/test_coverage)](https://codeclimate.com/github/frankip/bright_events/test_coverage)
-# bright_events
+# Bright_events
 Bright events provides a platform for event organizers to create and manage different types of events while making them easily accessible to target markets
 
 ## Designs ##
@@ -11,7 +11,7 @@ Bright events provides a platform for event organizers to create and manage diff
 
 You can also view the [Designs Here](https://confident-colden-f872a4.netlify.com/sign-in.html)
 
-### Wireframes ###
+### Wireframes 
 ![Alt sign-up](https://github.com/frankip/bright_events/blob/master/designs/wireframes/registration%20page.jpeg)
 ![Alt sign-in](https://github.com/frankip/bright_events/blob/master/designs/wireframes/login%20page.jpeg)
 ![Alt homepage](https://github.com/frankip/bright_events/blob/master/designs/wireframes/index.html.jpeg)
@@ -20,7 +20,7 @@ You can also view the [Designs Here](https://confident-colden-f872a4.netlify.com
 ### uml-class diagram ###
 ![Alt Uml-diagram](https://github.com/frankip/bright_events/blob/master/designs/wireframes/uml.jpeg)
 
-## To run the api  ##
+## To run the API  ##
 first clone this repo to your machine 
 
  ``` git clone https://github.com/frankip/bright_events.git ```
@@ -50,7 +50,7 @@ then on your terminal run
 
 ``` pip install -r requirements.txt ```
 
-#run 
+# run 
 To test our project on your terminal run 
 
 ``` export FLASK_APP=run.py```
@@ -59,9 +59,9 @@ then
 
 ``` flask run ```
 
-on your browser open up [http://127.0.0.1:5000/api/events](http://127.0.0.1:5000/api/events)
+on your browser open up [http://127.0.0.1:5000/api/events/](http://127.0.0.1:5000/api/events/)
 
-### testing using post man or curl 
+# Testing using postman or curl 
 
 the endpoints for the api are
 
@@ -97,3 +97,4 @@ the endpoints for the api are
 	-d '{"title": "Fruits"}' \
 	http://127.0.0.1:5000/api/events/
 
+# Aceess the API Documentation [Here](https://eventsbright.herokuapp.com/apidocs/#/)
