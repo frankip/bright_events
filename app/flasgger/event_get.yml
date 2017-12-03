@@ -1,0 +1,8 @@
+GET events endpoint
+    list all the events saved
+---
+tags:
+  - Bright Events API
+responses:
+  200:
+    description:

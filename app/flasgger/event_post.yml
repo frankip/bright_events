@@ -1,0 +1,30 @@
+create events endpoint.
+    create events using POST
+---
+tags:
+  - Bright Events API
+parameters:
+  - in: formData
+    name: event
+    type: string
+    required: true
+    description: name of the event!
+  - in: formData
+    name: location
+    type: string
+    required: true
+    description: Location of the event!
+  - in: formData
+    name: date
+    type: string
+    required: true
+    description: Date of the event!
+responses:
+  201:
+    description: The Event has been created
+    schema:
+      $ref: '#/definitions/Task'
+    examples:
+        "event": "Andela Cohort 24"
+        "location": "Nairobi"
+        "date": "12/12/2017"

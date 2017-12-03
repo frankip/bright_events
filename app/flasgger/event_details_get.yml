@@ -1,0 +1,15 @@
+Get events details endpoint
+    get a single event by giving a specific id
+    returns the event 
+---
+tags:
+  - Bright Events API
+parameters:
+  - in: path
+    name: key
+    required: true
+    description: The ID of the Event, try 1!
+    type: string
+responses:
+  200:
+    description: Retrieve specific event
