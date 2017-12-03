@@ -3,14 +3,45 @@ this files contains the logic and the routes of the app
 """
 from flask import request, url_for, abort, session
 from flask_api import status, exceptions
+from flasgger import Swagger
 
 from app import app
 from . models import Users, Events
+swagger = Swagger(app)
 
 
 @app.route('/api/auth/register', methods=['POST'])
 def registration():
-    """ This function handles the user registration"""
+    """ This function handles the user registration post endpoint
+    ---
+        tags:
+          - restful
+        parameters:
+          - in: formData
+            name: name
+            type: string
+            required: true
+            schema:
+              $ref: '#/definitions/Task'
+          - in: formData
+            name: email
+            type: string
+            required: true
+            schema:
+              $ref: '#/definitions/Task'
+          - in: formData
+            name: password
+            type: string
+            required: true
+            schema:
+              $ref: '#/definitions/Task'
+        responses:
+          201:
+            description: The task has been created
+            schema:
+              $ref: '#/definitions/Task'
+    
+    """
     if "user" in session:
         return {"message": "you are already logged in"}
     fname = request.data.get('first_name')
@@ -30,7 +61,23 @@ def registration():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    """Handles the user login logic """
+    """Handles the user login logic
+    ---
+        tags:
+          - restful
+        parameters:
+          - in: formData
+            name: email
+            type: string
+            required: true
+          - in: formData
+            name: password
+            type: string
+            required: true
+        responses:
+          200:
+            description: User has logged in 
+    """
     email = request.data.get('email')
     password = request.data.get('password')
 
@@ -67,7 +114,21 @@ def logout():
 
 @app.route('/api/auth/reset-password', methods=['POST'])
 def reset_password():
-    """Handles Resetting user Password"""
+    """Handles Resetting user Password
+    ---
+        tags:
+          - restful
+        parameters:
+          - in: formData
+            name: password
+            required: true
+            description: The ID of the task, try 42!
+            type: string
+        responses:
+          201:
+            description: The task has been updated
+
+    """
     if 'user' in session:
         password = request.data.get('password')
         Users.user_db['user'] = password
@@ -78,7 +139,27 @@ def reset_password():
 
 @app.route("/api/events", methods=['GET', 'POST'])
 def events_list():
-    """List or create events."""
+    """List or create events.
+        ---
+        tags:
+          - restful
+        parameters:
+          - in: formData
+            name: event
+            type: string
+            required: true
+          - in: formData
+            name: location
+            type: string
+            required: true
+          - in: formData
+            name: date
+            type: string
+            required: true
+        responses:
+          201:
+            description: The Event has been created
+    """
     if request.method == 'POST':
         event = request.data.get('event')
         location = request.data.get('location')
@@ -98,7 +179,21 @@ def events_list():
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 def events_details(key):
-    """Retrieve, update or delete events instances."""
+    """Retrieve, update or delete events instances.
+    ---
+        tags:
+          - restful
+        parameters:
+          - in: path
+            name: key
+            required: true
+            description: The ID of the Event, try event1!
+            type: string
+        responses:
+          200:
+            description: The event data
+
+    """
     if key not in Events.events_db:
         raise exceptions.NotFound()
 
@@ -129,7 +224,20 @@ def events_details(key):
 
 @app.route("/api/events/<int:key>/rsvp", methods=['GET', 'POST'])
 def rsvp_event(key):
-    """ Handles the RSVP logic"""
+    """ Handles the RSVP logic
+    ---
+        tags:
+          - restful
+        parameters:
+          - in: path
+            name: key
+            required: true
+            description: The ID of the Event, try event1!
+            type: string
+        responses:
+          200:
+            description: The RSVP data
+    """
     if key not in Events.events_db:
         raise exceptions.NotFound()
 
