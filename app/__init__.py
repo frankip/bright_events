@@ -9,7 +9,9 @@ from config import app_config
 # Initialize the app
 app = FlaskAPI(__name__, instance_relative_config=True)
 app.secret_key = "string"
-
+app.config['SWAGGER'] = {
+    'title': 'Bright Events'
+}
 # Load the views
 from app import views
 
