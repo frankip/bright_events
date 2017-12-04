@@ -97,4 +97,4 @@ the endpoints for the api are
 	-d '{"title": "Fruits"}' \
 	http://127.0.0.1:5000/api/events/
 
-# Aceess the API Documentation [Here](https://eventsbright.herokuapp.com/apidocs/#/)
+# Access the API Documentation [Here](https://eventsbright.herokuapp.com/apidocs/#/)
