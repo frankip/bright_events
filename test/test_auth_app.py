@@ -26,7 +26,7 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'test.com',
             'password': 'test_password'
             }
-        resp = self.client().post('/api/auth/register', data=user_data)
+        resp = self.client().post('/api/auth/register/', data=user_data)
         self.assertEqual(resp.status_code, 201)
         result = json.loads(resp.data.decode())
         self.assertEqual(result['message'], "user has been created")
@@ -37,9 +37,9 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'frank@example.com',
             'password': 'test_password'
             }
-        resp = self.client().post('/api/auth/register', data=self.user_data)
+        resp = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp.status_code, 201)
-        login_resp = self.client().post('/api/auth/login', data=self.user_data)
+        login_resp = self.client().post('/api/auth/login/', data=self.user_data)
         self.assertEqual(login_resp.status_code, 200)
 
     def test_failed_login(self):
@@ -48,14 +48,14 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'not_a_user@example.com',
             'password': 'nope'
         }
-        res = self.client().post('/api/auth/login', data=not_a_user)
+        res = self.client().post('/api/auth/login/', data=not_a_user)
         self.assertEqual(res.status_code, 401)
 
     def test_duplicate_usernames(self):
         """Test that a user cannot be registered twice."""
-        resp = self.client().post('/api/auth/register', data=self.user_data)
+        resp = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp.status_code, 201)
-        resp_2 = self.client().post('/api/auth/register', data=self.user_data)
+        resp_2 = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp_2.status_code, 202)
 
 
