@@ -20,6 +20,8 @@ You can also view the [Designs Here](https://confident-colden-f872a4.netlify.com
 ### uml-class diagram ###
 ![Alt Uml-diagram](https://github.com/frankip/bright_events/blob/master/designs/wireframes/uml.jpeg)
 
+# Link to Hosted [demo](https://eventsbright.herokuapp.com/api/events/)
+# Access the API Documentation [Here](https://eventsbright.herokuapp.com/apidocs/#/)
 ## To run the API  ##
 first clone this repo to your machine 
 
@@ -96,5 +98,3 @@ the endpoints for the api are
 	-H "Content-type: application/json" -X POST \
 	-d '{"title": "Fruits"}' \
 	http://127.0.0.1:5000/api/events/
-
-# Access the API Documentation [Here](https://eventsbright.herokuapp.com/apidocs/#/)
