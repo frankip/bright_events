@@ -171,7 +171,9 @@ def events_list():
 
         inst = Events(event, location, date)
         ids_ = inst.add_event()
-        message = {"message:event created": api_view(ids_)}
+        message = {
+            "message": "event created",
+             "object": api_view(ids_)}
         return message, status.HTTP_201_CREATED
 
     # request.method == 'GET'
@@ -200,7 +202,7 @@ def events_details(key):
             date=date
         )
         Events.events_db[key] = new_dat
-        message = {"message": api_view(key)}
+        message = {"message": "event updated", "object": api_view(key)}
         return message, status.HTTP_201_CREATED
 
     elif request.method == "DELETE":
@@ -225,7 +227,7 @@ def rsvp_event(key):
         if email is None:
             return{"message": "can not rsvp empty inputs"}
         rsvp_list.append(email)
-        return {'message': rsvp_list}, status.HTTP_201_CREATED
+        return {'message': "email added to RSVP", "object": rsvp_list}, status.HTTP_201_CREATED
     return rsvp_list
 
 
