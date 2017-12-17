@@ -2,14 +2,14 @@
 this files contains the logic and the routes of the app
 """
 import re
-from flask import request, url_for, abort, session
+from flask import request, url_for, session
 from flask_api import status, exceptions
 from flasgger import Swagger
 from flasgger.utils import swag_from
 
 from app import app
 from . models import Users, Events
-swagger = Swagger(app)
+Swagger(app)
 
 
 @app.route('/api/auth/register/', methods=['POST'])
@@ -129,7 +129,6 @@ def login():
 
     # user = Users(email, password)
     if email in Users.user_db.keys():
-        print(Users.user_db[email])
         if Users.user_db[email] == password:
             session['user'] = email
             return {
@@ -195,13 +194,15 @@ def events_list():
     """List or create events."""
     if request.method == 'POST':
         if "user" not in session:
-            return {"message": "you have to log in first to post"}
+            message = {"message": "you have to log in first to post"}
+            return message, status.HTTP_401_UNAUTHORIZED
         event = request.data.get('event')
         location = request.data.get('location')
         date = request.data.get('date')
 
         if event is None or location is None or date is None:
-            return {'message': 'inputs cannot be empty, please fill all inputs'}
+            message =  {'message': 'inputs cannot be empty, please fill all inputs'}
+            return message,status.HTTP_400_BAD_REQUEST
 
         inst = Events(event, location, date)
         ids_ = inst.add_event()

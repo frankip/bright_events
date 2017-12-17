@@ -16,6 +16,8 @@ class UserAuthTestcase(unittest.TestCase):
         self.app = app
         self.client = self.app.test_client
         self.user_data = {
+            'first_name': 'new',
+            'last_name': 'user',
             'email': 'test@example.com',
             'password': 'test_password'
             }
@@ -23,7 +25,9 @@ class UserAuthTestcase(unittest.TestCase):
     def test_user_registration(self):
         """Test user registration works correcty."""
         user_data = {
-            'email': 'test.com',
+            'first_name': 'new',
+            'last_name': 'user',
+            'email': 'frank@test.com',
             'password': 'test_password'
             }
         resp = self.client().post('/api/auth/register/', data=user_data)
@@ -34,6 +38,8 @@ class UserAuthTestcase(unittest.TestCase):
     def test_user_login(self):
         """Test registered user can login."""
         self.user_data = {
+            'first_name':'new',
+            'last_name':'user',
             'email': 'frank@example.com',
             'password': 'test_password'
             }
