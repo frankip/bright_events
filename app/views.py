@@ -21,10 +21,15 @@ def registration():
           - Bright Events API
         parameters:
           - in: formData
-            name: name
+            name: first name
             type: string
             required: true
-            description: Enter a name to register!
+            description: Enter a first name!
+          - in: formData
+            name: last name
+            type: string
+            required: true
+            description: Enter the last name!
           - in: formData
             name: email
             type: string
@@ -41,7 +46,8 @@ def registration():
             schema:
               $ref: '#/definitions/Task'
             examples:
-                name: John Doe
+                first_name : john
+                last_name : Doe
                 email: test@test.com
                 password: password
     """
@@ -201,8 +207,8 @@ def events_list():
         date = request.data.get('date')
 
         if event is None or location is None or date is None:
-            message =  {'message': 'inputs cannot be empty, please fill all inputs'}
-            return message,status.HTTP_400_BAD_REQUEST
+            message = {'message': 'inputs cannot be empty, please fill all inputs'}
+            return message, status.HTTP_400_BAD_REQUEST
 
         inst = Events(event, location, date)
         ids_ = inst.add_event()

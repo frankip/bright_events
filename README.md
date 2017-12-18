@@ -31,6 +31,9 @@ then change the directory to the project by
 
 ``` cd bright_events ```
 
+change to the active branch
+    ``` git checkout development ```
+
 to make sure all the packages needed to run the project present in your machine,
 we'll create a virtual enviroment and install the packages there
 
@@ -98,3 +101,4 @@ the endpoints for the api are
 	-H "Content-type: application/json" -X POST \
 	-d '{"title": "Fruits"}' \
 	http://127.0.0.1:5000/api/events/
+    
