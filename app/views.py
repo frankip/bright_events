@@ -17,13 +17,13 @@ Swagger(app)
 def registration():
     """
     user registration endpoint registers a user and
-    takes in a firstname, lastname, email and password
+    takes in a first name, last name, email, and password
     """
     if "user" in session:
         message = {"message": "you are already logged in"}
         return message, status.HTTP_202_ACCEPTED
 
-    # Retreive data from the user side
+    # Retrieve data from the user side
     fname = request.data.get('first_name')
     lname = request.data.get('last_name')
     email = request.data.get('email')
@@ -31,7 +31,7 @@ def registration():
 
     """
     validating the data from user isalpha ensures there are no
-    non-alphabet charcters
+    non-alphabet characters
     """
     errorlist = []
 
@@ -87,7 +87,7 @@ def login():
     if email in Users.user_db.keys():
         if Users.user_db[email] == password:
             session['user'] = email
-            message = {'message': 'you have succesfully been logged in'}
+            message = {'message': 'you have successfully been logged in'}
             return message, status.HTTP_200_OK
         else:
             raise exceptions.AuthenticationFailed()

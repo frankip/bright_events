@@ -59,8 +59,7 @@ class UserAuthTestcase(unittest.TestCase):
 
     def test_duplicate_usernames(self):
         """Test that a user cannot be registered twice."""
-        resp = self.client().post('/api/auth/register/', data=self.user_data)
-        self.assertEqual(resp.status_code, 201)
+        self.client().post('/api/auth/register/', data=self.user_data)
         resp_2 = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp_2.status_code, 202)
 

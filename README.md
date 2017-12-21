@@ -47,10 +47,6 @@ we'll create a virtual enviroment and install the packages there
 
 our virtual enviroment is now ready, we should install all packages for our project
 ensure you have pip installed otherwise 
-
-
-``` sudo apt install pip```
-
 then on your terminal run
 
 ``` pip install -r requirements.txt ```
