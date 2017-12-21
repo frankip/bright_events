@@ -12,12 +12,12 @@ from . models import Users, Events
 Swagger(app)
 
 
-@app.route('/api/auth/register/', methods=['POST'])
+@app.route('/api/auth/register/', methods=['GET', 'POST'])
 @swag_from('flasgger/auth_registration.yml', methods=['POST'])
 def registration():
     """
-    user registration endpoint registers a user and 
-    takes in a name, email and password
+    user registration endpoint registers a user and
+    takes in a firstname, lastname, email and password
     """
     if "user" in session:
         message = {"message": "you are already logged in"}
@@ -30,25 +30,29 @@ def registration():
     password = request.data.get('password')
 
     """
-    validate the data from user isalpha ensures there are no
+    validating the data from user isalpha ensures there are no
     non-alphabet charcters
     """
+    errorlist = []
+
     if fname is None or fname.strip == "" or not fname.isalpha():
-        message = {"message": "check if the first name is correctly filled"}
-        return message, status.HTTP_400_BAD_REQUEST
+        message = {"message": "ensure the first name is not empty or filled out correctly"}
+        errorlist.append(message)
 
     if lname is None or lname.strip == "" or not lname.isalpha():
-        message = {"message": "check if the last name is correctly filled"}
-        return message, status.HTTP_400_BAD_REQUEST
+        message = {"message": "ensure the last name is not empty or filled out correctly"}
+        errorlist.append(message)
 
     if email is None or email.strip == "" or not re.search(
             r'[\w.-]+@[\w.-]+.\w+', email):
-        message = {"message": "The email address is not filled out correctly"}
-        return message, status.HTTP_400_BAD_REQUEST
+        message = {"message": "ensure that email is not empty or filled out correctly"}
+        errorlist.append(message)
 
     if password is None:
         message = {"message": "Password can not be empty"}
-        return message, status.HTTP_400_BAD_REQUEST
+        errorlist.append(message)
+
+    return [msg for msg in errorlist], status.HTTP_400_BAD_REQUEST
 
     # instantiate a user from the user class
     user = Users(fname, lname, email, password)
@@ -67,9 +71,7 @@ def registration():
 @app.route('/api/auth/login/', methods=['POST'])
 @swag_from('flasgger/auth_login.yml', methods=['POST'])
 def login():
-    """User login endpoint
-        logs in a user created in the register endpoint
-    """
+    """User login endpoint logs in a user created in the register endpoint"""
     email = request.data.get('email')
     password = request.data.get('password')
 
@@ -85,8 +87,8 @@ def login():
     if email in Users.user_db.keys():
         if Users.user_db[email] == password:
             session['user'] = email
-            return {
-                'message': 'you have succesfully been logged in'}, status.HTTP_200_OK
+            message = {'message': 'you have succesfully been logged in'}
+            return message, status.HTTP_200_OK
         else:
             raise exceptions.AuthenticationFailed()
     raise exceptions.AuthenticationFailed()
@@ -107,15 +109,13 @@ def logout():
 @app.route('/api/auth/reset-password/', methods=['POST'])
 @swag_from('flasgger/auth_reset_password.yml', methods=['POST'])
 def reset_password():
-    """Reset user Password endpoint
-        takes in a password and resets the password
-    """
+    """Reset user Password endpoint takes in a password and resets the password"""
     if 'user' in session:
         password = request.data.get('password')
         Users.user_db['user'] = password
         message = {"message": "you have succesfuly reset your password"}
         return message, status.HTTP_200_OK
-    message =  {"message": "you need to log in first to reset password"}
+    message = {"message": "you need to log in first to reset password"}
     return message, status.HTTP_401_UNAUTHORIZED
 
 
