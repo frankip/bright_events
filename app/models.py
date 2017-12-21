@@ -33,7 +33,7 @@ class Users:
 
     def check_user(self, email):
         '''
-        This method takes in a username and
+        This method takes in a email and
         checks if its in the dictonary
         '''
         if email in self.user_db.keys():
