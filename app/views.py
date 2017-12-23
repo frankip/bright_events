@@ -33,26 +33,24 @@ def registration():
     validating the data from user isalpha ensures there are no
     non-alphabet characters
     """
-    errorlist = []
 
     if fname is None or fname.strip == "" or not fname.isalpha():
         message = {"message": "ensure the first name is not empty or filled out correctly"}
-        errorlist.append(message)
+        return message, status.HTTP_400_BAD_REQUEST
+
 
     if lname is None or lname.strip == "" or not lname.isalpha():
         message = {"message": "ensure the last name is not empty or filled out correctly"}
-        errorlist.append(message)
+        return message, status.HTTP_400_BAD_REQUEST
 
     if email is None or email.strip == "" or not re.search(
             r'[\w.-]+@[\w.-]+.\w+', email):
         message = {"message": "ensure that email is not empty or filled out correctly"}
-        errorlist.append(message)
+        return message, status.HTTP_400_BAD_REQUEST
 
     if password is None:
         message = {"message": "Password can not be empty"}
-        errorlist.append(message)
-
-    return [msg for msg in errorlist], status.HTTP_400_BAD_REQUEST
+        return message, status.HTTP_400_BAD_REQUEST
 
     # instantiate a user from the user class
     user = Users(fname, lname, email, password)
@@ -125,9 +123,6 @@ def reset_password():
 def events_list():
     """List or create events."""
     if request.method == 'POST':
-        if "user" not in session:
-            message = {"message": "you have to log in first to post"}
-            return message, status.HTTP_401_UNAUTHORIZED
         event = request.data.get('event')
         location = request.data.get('location')
         date = request.data.get('date')
