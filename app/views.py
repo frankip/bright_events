@@ -4,11 +4,18 @@ this files contains the logic and the routes of the app
 import re
 from flask import request, url_for, session
 from flask_api import status, exceptions
+from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
 from flasgger.utils import swag_from
 
+#local imports
 from app import app
 from . models import Users, Events
+
+# initialize sql-alchemy
+db = SQLAlchemy()
+
+#flassger api documentation
 Swagger(app)
 
 
