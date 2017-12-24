@@ -16,10 +16,19 @@ class DevelopmentConfig(Config):
     """
     Development configurations
     """
+    POSTGRES = {
+        'user': 'postgres',
+        'pw': 'admin',
+        'db': 'postgres',
+        'host': 'localhost',
+        'port': '5432',
+    }
 
     DEBUG = True
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_db'
+    # SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_db'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://%(user)s:\
+    %(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
 
 class ProductionConfig(Config):
     """

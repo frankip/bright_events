@@ -16,9 +16,10 @@ app.secret_key = "string"
 app.config['SWAGGER'] = {
     'title': 'Bright Events'
 }
+db.init_app(app)
 # Load the views
 from app import views
 
 # # Load the config file
 app.config.from_object('config')
-db.init_app(app)
+
