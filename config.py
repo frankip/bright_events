@@ -17,9 +17,9 @@ class DevelopmentConfig(Config):
     Development configurations
     """
     POSTGRES = {
-        'user': 'postgres',
+        'user': 'events',
         'pw': 'admin',
-        'db': 'postgres',
+        'db': 'bright_events',
         'host': 'localhost',
         'port': '5432',
     }

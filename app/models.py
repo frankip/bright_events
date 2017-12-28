@@ -56,7 +56,7 @@ class Users:
         # return pwd_context.verify(password, self.password)
 
 
-class Events():
+class Events(db.Model):
     """
     This class hold the logic and methods for the
     events
