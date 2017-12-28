@@ -4,7 +4,7 @@ This files test the events end point functionality
 from __future__ import absolute_import
 
 import unittest
-from app import app
+from app import app,db
 
 
 class TestEventsItem(unittest.TestCase):
@@ -13,6 +13,7 @@ class TestEventsItem(unittest.TestCase):
     def setUp(self):
         """Set up test variables."""
         self.app = app
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://events:admin@localhost:5432/bright_events'
         self.client = self.app.test_client
         self.new_event = {
             "event": "Barbecue party",
@@ -24,6 +25,11 @@ class TestEventsItem(unittest.TestCase):
             "location": "Ngong",
             "date": "12/12/2017"
         }
+
+        # binds the app to the current context
+        with self.app.app_context():
+            # create all tables
+            db.create_all()
 
     def test_retrieve_events(self):
         """Test API can retrieve events (GET request)."""
@@ -56,6 +62,13 @@ class TestEventsItem(unittest.TestCase):
         # Test to see if it exists, should return a 404
         result = self.client().get('/api/events/1/')
         self.assertEqual(result.status_code, 404)
+
+    def tearDown(self):
+        """teardown all initialized variables."""
+        with self.app.app_context():
+            # drop all tables
+            db.session.remove()
+            db.drop_all()
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 this files contains the logic and the routes of the app
 """
 import re
-from flask import request, url_for, session
+from flask import request, url_for, session, jsonify
 from flask_api import status, exceptions
 from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
@@ -139,11 +139,19 @@ def events_list():
             return message, status.HTTP_400_BAD_REQUEST
 
         inst = Events(event, location, date)
-        ids_ = inst.add_event()
-        message = {
-            "message": "event created",
-            "object": api_view(ids_)}
-        return message, status.HTTP_201_CREATED
+        inst.save()
+        # ids_ = inst.add_event()
+        response = jsonify({
+            'id': inst.id,
+            'event': inst.event,
+            'location': inst.location,
+            'date': inst.date
+        })
+
+        # message = {
+        #     "message": "event created",
+        #     "object": response}
+        return response, status.HTTP_201_CREATED
 
     # request.method == 'GET'
     return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
