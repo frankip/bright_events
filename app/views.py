@@ -154,7 +154,19 @@ def events_list():
         return response, status.HTTP_201_CREATED
 
     # request.method == 'GET'
-    return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
+    # return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
+    events = Events.get_all()
+    results=[]
+    for event in events:
+        obj = {
+            'id': event.id,
+            'event': event.event,
+            'location': event.location,
+            'date': event.date
+        }
+        results.append(obj)
+    response = jsonify(results)
+    return response, status.HTTP_200_OK
 
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])

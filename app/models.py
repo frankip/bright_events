@@ -85,7 +85,7 @@ class Events(db.Model):
 
     @staticmethod
     def get_all():
-        return events_db.query.all()
+        return Events.query.all()
 
     def delete(self):
         db.session.delete(self)

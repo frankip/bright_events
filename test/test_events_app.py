@@ -13,7 +13,7 @@ class TestEventsItem(unittest.TestCase):
     def setUp(self):
         """Set up test variables."""
         self.app = app
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://events:admin@localhost:5432/bright_events'
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://events:admin@localhost:5432/flask_api'
         self.client = self.app.test_client
         self.new_event = {
             "event": "Barbecue party",
@@ -73,4 +73,3 @@ class TestEventsItem(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
