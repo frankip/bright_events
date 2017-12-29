@@ -12,69 +12,40 @@ from . models import Users, Events
 Swagger(app)
 
 
-@app.route('/api/auth/register/', methods=['POST'])
+@app.route('/api/auth/register/', methods=['GET', 'POST'])
+@swag_from('flasgger/auth_registration.yml', methods=['POST'])
 def registration():
-    """user registration endpoint
-          registers a user and takes in a name, email and password
-     ---
-        tags:
-          - Bright Events API
-        parameters:
-          - in: formData
-            name: first name
-            type: string
-            required: true
-            description: Enter a first name!
-          - in: formData
-            name: last name
-            type: string
-            required: true
-            description: Enter the last name!
-          - in: formData
-            name: email
-            type: string
-            required: true
-            description: The email address you will use to log in!
-          - in: formData
-            name: password
-            type: string
-            required: true
-            description: The password you will use to registert!
-        responses:
-          201:
-            description: User has been created successfully
-            schema:
-              $ref: '#/definitions/Task'
-            examples:
-                first_name : john
-                last_name : Doe
-                email: test@test.com
-                password: password
+    """
+    user registration endpoint registers a user and
+    takes in a first name, last name, email, and password
     """
     if "user" in session:
-        return {"message": "you are already logged in"}
+        message = {"message": "you are already logged in"}
+        return message, status.HTTP_202_ACCEPTED
 
-    # Retreive data from the user side
+    # Retrieve data from the user side
     fname = request.data.get('first_name')
     lname = request.data.get('last_name')
     email = request.data.get('email')
     password = request.data.get('password')
 
     """
-    validate the data from user isalpha ensures there are no
-    non-alphabet charcters
+    validating the data from user isalpha ensures there are no
+    non-alphabet characters
     """
+
     if fname is None or fname.strip == "" or not fname.isalpha():
-        message = {"message": "check if the first name is correctly filled"}
+        message = {"message": "ensure the first name is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
+
     if lname is None or lname.strip == "" or not lname.isalpha():
-        message = {"message": "check if the last name is correctly filled"}
+        message = {"message": "ensure the last name is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
     if email is None or email.strip == "" or not re.search(
             r'[\w.-]+@[\w.-]+.\w+', email):
-        message = {"message": "The email address is not filled out correctly"}
+        message = {"message": "ensure that email is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
     if password is None:
@@ -96,32 +67,9 @@ def registration():
 
 
 @app.route('/api/auth/login/', methods=['POST'])
+@swag_from('flasgger/auth_login.yml', methods=['POST'])
 def login():
-    """User login endpoint
-        logs in a user created in the register endpoint
-    ---
-        tags:
-          - Bright Events API
-        parameters:
-          - in: formData
-            name: email
-            type: string
-            required: true
-            description: email addres you registered with!
-          - in: formData
-            name: password
-            type: string
-            required: true
-            description: The password you registered with!
-        responses:
-          200:
-            description: You have logged in successfully
-            schema:
-              $ref: '#/definitions/Task'
-            examples:
-                email: test@test.com
-                password: password
-    """
+    """User login endpoint logs in a user created in the register endpoint"""
     email = request.data.get('email')
     password = request.data.get('password')
 
@@ -137,24 +85,17 @@ def login():
     if email in Users.user_db.keys():
         if Users.user_db[email] == password:
             session['user'] = email
-            return {
-                'message': 'you have succesfully been logged in'}, status.HTTP_200_OK
+            message = {'message': 'you have successfully been logged in'}
+            return message, status.HTTP_200_OK
         else:
             raise exceptions.AuthenticationFailed()
     raise exceptions.AuthenticationFailed()
 
 
 @app.route('/api/auth/logout/', methods=['POST'])
+@swag_from('flasgger/auth_logout.yml', methods=['POST'])
 def logout():
-    """User Logout endpoints
-        logs out a user
-    ---
-        tags:
-            - Bright Events API
-        responses:
-            200:
-                description: you have been logged out
-    """
+    """User Logout endpoints logs out a user"""
     if 'user' not in session:
         message = {"message": "you have to login first"}
         return message, status.HTTP_401_UNAUTHORIZED
@@ -164,33 +105,16 @@ def logout():
 
 
 @app.route('/api/auth/reset-password/', methods=['POST'])
+@swag_from('flasgger/auth_reset_password.yml', methods=['POST'])
 def reset_password():
-    """Reset user Password endpoint
-        takes in a password and resets the password
-    ---
-        tags:
-          - Bright Events API
-        parameters:
-          - in: formData
-            name: password
-            required: true
-            description: The password you want to reset!
-            type: string
-        responses:
-          201:
-            description: Password updated successfully
-            schema:
-              $ref: '#/definitions/Task'
-            examples:
-                password: password
-
-    """
+    """Reset user Password endpoint takes in a password and resets the password"""
     if 'user' in session:
         password = request.data.get('password')
         Users.user_db['user'] = password
-        print(Users.user_db['user'])
-        return {"message": "you have succesfuly reset your password"}
-    return {"message": "you need to log in first to reset password"}
+        message = {"message": "you have succesfuly reset your password"}
+        return message, status.HTTP_200_OK
+    message = {"message": "you need to log in first to reset password"}
+    return message, status.HTTP_401_UNAUTHORIZED
 
 
 @app.route("/api/events/", methods=['GET', 'POST'])
@@ -199,9 +123,6 @@ def reset_password():
 def events_list():
     """List or create events."""
     if request.method == 'POST':
-        if "user" not in session:
-            message = {"message": "you have to log in first to post"}
-            return message, status.HTTP_401_UNAUTHORIZED
         event = request.data.get('event')
         location = request.data.get('location')
         date = request.data.get('date')
