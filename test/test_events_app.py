@@ -31,12 +31,6 @@ class TestEventsItem(unittest.TestCase):
             # create all tables
             db.create_all()
 
-    def test_retrieve_events(self):
-        """Test API can retrieve events (GET request)."""
-        resp = self.client().post('/api/events/', data=self.new_event)
-        self.assertEqual(resp.status_code, 201)
-        resp = self.client().get('/api/events/')
-        self.assertIn('Barbecue', str(resp.data))
 
     def test_create_event(self):
         """Test API can create an event (POST request)"""
@@ -44,13 +38,30 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         self.assertIn('Barbecue party', str(resp.data))
 
+    def test_retrieve_all_events(self):
+        """Test API can retrieve all events (GET request)."""
+        resp = self.client().post('/api/events/', data=self.new_event)
+        self.assertEqual(resp.status_code, 201)
+        resp = self.client().get('/api/events/')
+        self.assertIn('Barbecue', str(resp.data))
+
+
+    def test_retrieve_single_event(self):
+        """Test API can retrieve a single event by using it's id.(GET request)."""
+        resp = self.client().post('/api/events/', data=self.new_event)
+        self.assertEqual(resp.status_code, 201)
+        result = self.client().get(
+            '/api/events/{}/'.format(1))
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Barbecue', str(result.data))
+
     def test_update_event(self):
         """Test API can edit an existing event. (PUT request)"""
         resp = self.client().post('api/events/', data=self.new_event)
         self.assertEqual(resp.status_code, 201)
-        resp = self.client().put('api/events/4/', data=self.update_event)
+        resp = self.client().put('api/events/1/', data=self.update_event)
         self.assertEqual(resp.status_code, 201)
-        new_ = self.client().get('api/events/4/')
+        new_ = self.client().get('api/events/1/')
         self.assertIn('Burger', str(new_.data))
 
     def test_event_deletion(self):
@@ -73,3 +84,4 @@ class TestEventsItem(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    
