@@ -56,6 +56,7 @@ class Users:
         # return pwd_context.verify(password, self.password)
 
 
+
 class Events(db.Model):
     """
     This class hold the logic and methods for the
@@ -70,8 +71,6 @@ class Events(db.Model):
     event = db.Column(db.String(255))
     location = db.Column(db.String(255))
     date = db.Column(db.DateTime, default=db.func.current_timestamp())
-
-
 
     def __init__(self, event, location, date):
         self.event = event
