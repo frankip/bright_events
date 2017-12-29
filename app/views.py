@@ -156,7 +156,7 @@ def events_list():
     # request.method == 'GET'
     # return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
     events = Events.get_all()
-    results=[]
+    results = []
     for event in events:
         obj = {
             'id': event.id,
@@ -165,17 +165,21 @@ def events_list():
             'date': event.date
         }
         results.append(obj)
-    response = jsonify(results)
-    return response, status.HTTP_200_OK
+    return results, status.HTTP_200_OK
 
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 @swag_from('flasgger/event_details_get.yml', methods=['GET'])
 @swag_from('flasgger/event_details_put.yml', methods=['PUT'])
 @swag_from('flasgger/event_details_delete.yml', methods=['DELETE'])
-def events_details(key):
+def events_details(key, **kwargs):
     """Retrieve, update or delete events instances."""
-    if key not in Events.events_db:
+
+    #Retrieve Events by id
+    get_event = Events.query.filter_by(id=id).first()
+
+    if not get_event:
+        #Rise Not found exception
         raise exceptions.NotFound()
 
     if request.method == 'PUT':
@@ -186,21 +190,32 @@ def events_details(key):
         if event is None or location is None or date is None:
             return {'message': 'inputs cannot be empty, please fill all inputs'}
 
-        new_dat = dict(
-            event=event,
-            location=location,
-            date=date
-        )
-        Events.events_db[key] = new_dat
-        message = {"message": "event updated", "object": api_view(key)}
-        return message, status.HTTP_201_CREATED
+        # new_dat = dict(
+        #     event=event,
+        #     location=location,
+        #     date=date
+        # )
+        get_event.event = event
+        # Events.events_db[key] = new_dat
+        response = jsonify({
+            'id': get_event.id,
+            'event': get_event.event,
+        })
+        # message = {"message": "event updated", "object": api_view(key)}
+        return response, status.HTTP_201_CREATED
 
     elif request.method == "DELETE":
-        Events.events_db.pop(key, None)
+        event.delete()
         message = {"message": "Deleted succesfully"}
         return message, status.HTTP_204_NO_CONTENT
-
-    return api_view(key)
+    
+    response = jsonify({
+        'id': get_event.id,
+        'event': get_event.event,
+        'location': get_event.location,
+        'date': get_event.date
+    })
+    return response, status.HTTP_200_OK
 
 
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])
