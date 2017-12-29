@@ -16,19 +16,17 @@ class DevelopmentConfig(Config):
     """
     Development configurations
     """
-    POSTGRES = {
-        'user': 'events',
-        'pw': 'admin',
-        'db': 'bright_events',
-        'host': 'localhost',
-        'port': '5432',
-    }
-
     DEBUG = True
     TESTING = True
-    # SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_db'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://%(user)s:\
-    %(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
+    # SQLALCHEMY_DATABASE_URI = 'postgresql://%(user)s:\
+    # %(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
+
+
+class TestingConfig(Config):
+    """Configurations for Testing, with a separate test database."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:admin@localhost/test_db'
+    DEBUG = True
 
 class ProductionConfig(Config):
     """
@@ -39,5 +37,6 @@ class ProductionConfig(Config):
 
 app_config = {
     'development': DevelopmentConfig,
+    'testing': TestingConfig,
     'production': ProductionConfig
 }

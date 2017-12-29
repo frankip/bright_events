@@ -4,6 +4,7 @@ This files test the events end point functionality
 from __future__ import absolute_import
 
 import unittest
+from config import app_config
 from app import app,db
 
 
@@ -13,7 +14,7 @@ class TestEventsItem(unittest.TestCase):
     def setUp(self):
         """Set up test variables."""
         self.app = app
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://events:admin@localhost:5432/flask_api'
+        self.app.config.from_object(app_config['testing'])
         self.client = self.app.test_client
         self.new_event = {
             "event": "Barbecue party",
