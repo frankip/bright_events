@@ -4,16 +4,12 @@ this files contains the logic and the routes of the app
 import re
 from flask import request, url_for, session, jsonify
 from flask_api import status, exceptions
-from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
 from flasgger.utils import swag_from
 
 #local imports
 from app import app
 from . models import Users, Events
-
-# initialize sql-alchemy
-db = SQLAlchemy()
 
 #flassger api documentation
 Swagger(app)
@@ -140,21 +136,15 @@ def events_list():
 
         inst = Events(event, location, date)
         inst.save()
-        # ids_ = inst.add_event()
         response = jsonify({
             'id': inst.id,
             'event': inst.event,
             'location': inst.location,
             'date': inst.date
         })
-
-        # message = {
-        #     "message": "event created",
-        #     "object": response}
         return response, status.HTTP_201_CREATED
 
     # request.method == 'GET'
-    # return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
     events = Events.get_all()
     results = []
     for event in events:
@@ -172,16 +162,16 @@ def events_list():
 @swag_from('flasgger/event_details_get.yml', methods=['GET'])
 @swag_from('flasgger/event_details_put.yml', methods=['PUT'])
 @swag_from('flasgger/event_details_delete.yml', methods=['DELETE'])
-def events_details(key, **kwargs):
+def events_details(key):
     """Retrieve, update or delete events instances."""
 
     #Retrieve Events by id
-    get_event = Events.query.filter_by(id=id).first()
+    get_event = Events.query.filter_by(id=key).first()
 
     if not get_event:
-        #Rise Not found exception
+        #if there is no event Rise Not found exception
         raise exceptions.NotFound()
-
+    
     if request.method == 'PUT':
         event = request.data.get('event')
         location = request.data.get('location')
@@ -190,31 +180,31 @@ def events_details(key, **kwargs):
         if event is None or location is None or date is None:
             return {'message': 'inputs cannot be empty, please fill all inputs'}
 
-        # new_dat = dict(
-        #     event=event,
-        #     location=location,
-        #     date=date
-        # )
         get_event.event = event
-        # Events.events_db[key] = new_dat
-        response = jsonify({
+        get_event.location = location
+        get_event.date = date
+        #save the updated event
+        get_event.save()
+        response = {
             'id': get_event.id,
             'event': get_event.event,
-        })
-        # message = {"message": "event updated", "object": api_view(key)}
+            'location': get_event.location,
+            'date': get_event.date
+        }
         return response, status.HTTP_201_CREATED
-
+    
     elif request.method == "DELETE":
-        event.delete()
+        get_event.delete()
         message = {"message": "Deleted succesfully"}
         return message, status.HTTP_204_NO_CONTENT
-    
-    response = jsonify({
+
+    # request.method == 'GET':
+    response = {
         'id': get_event.id,
         'event': get_event.event,
         'location': get_event.location,
         'date': get_event.date
-    })
+    }
     return response, status.HTTP_200_OK
 
 
