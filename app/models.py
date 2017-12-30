@@ -1,45 +1,47 @@
 """
 This files handles all the database logic and instances
 """
-import itertools
 from passlib.apps import custom_app_context as pwd_context
 
 from app import db
 
-class Users:
+class Users(db.Model):
     """
     This class handles all the logic and methods
     associated with a user
     """
-    user_db = {}
-    id_generator = itertools.count(1)
+
+    __tablename__ = 'user_db'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(256), nullable=False, unique=True)
+    password = db.Column(db.String(256), nullable=False)
+    fname = db.Column(db.String(256), nullable=False)
+    lname = db.Column(db.String(256), nullable=False)
+    event = db.relationship(
+        'Events', order_by='Events.id', cascade="all, delete-orphan"
+    )
 
     def __init__(self, fname, lname, email, password):
-        self._id = next(self.id_generator)
         self.fname = fname
         self.lname = lname
         self.email = email
         self.password = password
 
     def save(self):
-        """Saves the data to the datastructure dictonary"""
-        self.user_db[self._id] = dict(
-            fname=self.fname,
-            lname=self.lname,
-            email=self.email,
-            password=self.password
-        )
-        self.user_db[self.email] = self.password
-        return self
+        """Creates a new user and saves to the database"""
+        db.session.add(self)
+        db.session.commit()
 
     def check_user(self, email):
         """
         This method takes in a email and
         checks if its in the dictonary
         """
-        if email in self.user_db.keys():
-            return "User already exists. Please login.", 201
-        return False
+        # if email in self.user_db.keys():
+        #     return "User already exists. Please login.", 201
+        # return False
+        pass
 
     def hash_password(self, password):
         """
@@ -52,8 +54,7 @@ class Users:
         """
         check pasword provided with hash in db
         """
-        pass
-        # return pwd_context.verify(password, self.password)
+        return pwd_context.verify(self.password, password, )
 
 
 class Events(db.Model):
@@ -61,8 +62,6 @@ class Events(db.Model):
     This class hold the logic and methods for the
     events
     """
-    # events_db = {}
-    # id_generator = itertools.count(1)
 
     __tablename__ = 'events_db'
 
@@ -70,13 +69,15 @@ class Events(db.Model):
     event = db.Column(db.String(255))
     location = db.Column(db.String(255))
     date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    created_by = db.Column(db.Integer, db.ForeignKey(Users.id))
 
 
 
-    def __init__(self, event, location, date):
+    def __init__(self, event, location, date, created_by):
         self.event = event
         self.location = location
         self.date = date
+        self.created_by = created_by
         self.rsvp = []
 
     def save(self):
@@ -84,8 +85,8 @@ class Events(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all():
-        return Events.query.all()
+    def get_all(user_id):
+        return Events.query.filter_by(created_by=user_id)
 
     def delete(self):
         db.session.delete(self)
@@ -93,14 +94,3 @@ class Events(db.Model):
 
     def __repr__(self):
         return "<Events: {}>".format(self.event)
-
-    # def add_event(self):
-    #     """handles adding events to dictonary"""
-    #     new_data = dict(
-    #         event=self.event,
-    #         location=self.location,
-    #         date=self.date,
-    #         rsvp=self.rsvp
-    #     )
-    #     self.events_db[self.ids_] = new_data
-    #     return self.ids_
