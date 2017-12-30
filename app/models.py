@@ -1,11 +1,11 @@
 """
 This files handles all the database logic and instances
 """
-import jwt
 from datetime import datetime, timedelta
+import jwt
 from passlib.apps import custom_app_context as pwd_context
 
-from app import db
+from app import db, app
 
 class Users(db.Model):
     """
@@ -45,18 +45,11 @@ class Users(db.Model):
         # return False
         pass
 
-    def hash_password(self, password):
-        """
-        hash pasword to store in db
-        """
-
-        self.password = pwd_context.encrypt(password)
-
     def verify_password(self, password):
         """
         check pasword provided with hash in db
         """
-        return pwd_context.verify(self.password, password, )
+        return pwd_context.verify(self.password, password)
 
     def generate_token(self, user_id):
         """Generating the access token"""
@@ -70,21 +63,21 @@ class Users(db.Model):
             # create the byte string token using the payload and the SECRET key
             jwt_string = jwt.encode(
                 payload,
-                current_app.config.get('secret'),
-                algorithim='HS256'
+                app.secret_key,
+                algorithm='HS256'
             )
             return jwt_string
 
         except Exception as e:
             # return an error in string format if an exception occurs
             return str(e)
-        
+
     @staticmethod
     def decode_token(token):
         """Decodes the access token from the Authorization header."""
         try:
             # try to decode the token using our SECRET variable
-            payload = jwt.decode(token, current_app.config.get('SECRET'))
+            payload = jwt.decode(token, app.secret_key)
             return payload['sub']
         except jwt.ExpiredSignatureError:
             # The token is expired, return an error string
@@ -106,8 +99,6 @@ class Events(db.Model):
     location = db.Column(db.String(255))
     date = db.Column(db.DateTime, default=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(Users.id))
-
-
 
     def __init__(self, event, location, date, created_by):
         self.event = event

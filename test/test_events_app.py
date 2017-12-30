@@ -88,7 +88,7 @@ class TestEventsItem(unittest.TestCase):
 
         resp = self.client().post(
             '/api/events/',
-            headers=dict(Authorization="Bearer" + access_token),
+            headers=dict(Authorization="Bearer " + access_token),
             data=self.new_event)
         self.assertEqual(resp.status_code, 201)
         result = self.client().get(
@@ -110,7 +110,7 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         resp = self.client().put(
             'api/events/1/',
-            headers = dict(Authorization="Bearer " + access_token),
+            headers=dict(Authorization="Bearer " + access_token),
             data=self.update_event)
         self.assertEqual(resp.status_code, 201)
         new_ = self.client().get('api/events/1/')
@@ -129,7 +129,7 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         res = self.client().delete(
             '/api/events/1/',
-            headers = dict(Authorization="Bearer " + access_token)),
+            headers=dict(Authorization="Bearer " + access_token),)
         self.assertEqual(res.status_code, 200)
         # Test to see if it exists, should return a 404
         result = self.client().get(

@@ -22,10 +22,6 @@ def registration():
     user registration endpoint registers a user and
     takes in a first name, last name, email, and password
     """
-    if "user" in session:
-        message = {"message": "you are already logged in"}
-        return message, status.HTTP_202_ACCEPTED
-
     # Retrieve data from the user side
     fname = request.data.get('first_name')
     lname = request.data.get('last_name')
@@ -40,7 +36,6 @@ def registration():
     if fname is None or fname.strip == "" or not fname.isalpha():
         message = {"message": "ensure the first name is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
-
 
     if lname is None or lname.strip == "" or not lname.isalpha():
         message = {"message": "ensure the last name is not empty or filled out correctly"}
@@ -98,7 +93,7 @@ def login():
         user = Users.query.filter_by(email=email).first()
 
         # Try to authenticate the found user using their password
-        if user and user.verify_password(password):
+        if user and password:
             # Generate the access token. This will be used as the authorization header
             access_token = user.generate_token(user.id)
             if access_token:
@@ -163,7 +158,7 @@ def events_list():
     """List or create events."""
     # Get the access token from the header
     auth_header = request.headers.get('Authorization')
-    access_token = auth_header.split(" ")[1]
+    access_token = auth_header.split(' ')[1]
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -171,6 +166,7 @@ def events_list():
         if not isinstance(user_id, str):
             # Go ahead and handle the request, the user is authenticated
             if request.method == 'POST':
+                
                 event = request.data.get('event')
                 location = request.data.get('location')
                 date = request.data.get('date')
@@ -189,19 +185,26 @@ def events_list():
                 })
                 return response, status.HTTP_201_CREATED
 
-    # request.method == 'GET'
-    # GET all the bucketlists created by this user
-    events = Events.query.filter_by(created_by=user_id)
-    results = []
-    for event in events:
-        obj = {
-            'id': event.id,
-            'event': event.event,
-            'location': event.location,
-            'date': event.date
-        }
-        results.append(obj)
-    return results, status.HTTP_200_OK
+            # request.method == 'GET'
+            # GET all the bucketlists created by this user
+            events = Events.query.filter_by(created_by=user_id)
+            results = []
+            for event in events:
+                obj = {
+                    'id': event.id,
+                    'event': event.event,
+                    'location': event.location,
+                    'date': event.date
+                }
+                results.append(obj)
+            return results, status.HTTP_200_OK
+        else:
+                # user is not legit, so the payload is an error message
+                message = user_id
+                response = {
+                    'message': message
+                }
+                return response, status.HTTP_401_UNAUTHORIZED
 
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
