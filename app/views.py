@@ -56,8 +56,9 @@ def registration():
         return message, status.HTTP_400_BAD_REQUEST
 
     # check if the user is already registered
-    user = User.query.filter_by(email=email.first()
-    
+    # Query to see if the user already exists
+    user = Users.query.filter_by(email=email).first()
+
     if not user:
         # There is no user so we'll try to register them
         try:
@@ -65,22 +66,26 @@ def registration():
             user = Users(fname, lname, email, password)
             # create new user and save them to the database
             user.save()
-            message={'message': "user has been created"}
+
+            message = {'message': "user has been created"}
             return message, status.HTTP_201_CREATED
+
         except Exception as e:
             # An error occured, therefore return a string message containing the error
             message = {'message':str(e)}
-            return message,status.HTTP_401_UNAUTHORIZED
+
+            return message, status.HTTP_401_UNAUTHORIZED
     else:
-        # There is an existing user. We don't want to register users twice
+        # There is an existing user.
         # Return a message to the user telling them that they they already exist
-        message={'message': 'User already exists. Please login.'}
+        message = {'message': 'User already exists. Please login.'}
+
         return message, status.HTTP_202_ACCEPTED
 
 @app.route('/api/auth/login/', methods=['POST'])
 @swag_from('flasgger/auth_login.yml', methods=['POST'])
 def login():
-    """User login endpoint logs in a user created in the register endpoint"""
+    """Endpoint for loggig in users"""
     email = request.data.get('email')
     password = request.data.get('password')
 
@@ -88,19 +93,42 @@ def login():
         message = {'message': 'inputs cannot be empty'}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if not Users.user_db.keys():
-        message = {"message": "You need to register first before you login"}
-        return message, status.HTTP_400_BAD_REQUEST
+    try:
+        # Get the user object using their email (unique to every user)
+        user = Users.query.filter_by(email=email).first()
 
-    # user = Users(email, password)
-    if email in Users.user_db.keys():
-        if Users.user_db[email] == password:
-            session['user'] = email
-            message = {'message': 'you have successfully been logged in'}
-            return message, status.HTTP_200_OK
-        else:
-            raise exceptions.AuthenticationFailed()
-    raise exceptions.AuthenticationFailed()
+        # Try to authenticate the found user using their password
+        if user and user.verify_password(password):
+            # Generate the access token. This will be used as the authorization header
+            access_token = user.generate_token(user.id)
+            if access_token:
+                response = {
+                    'message': 'You logged in successfully.',
+                    'access_token': access_token.decode()
+                }
+            return response, status.HTTP_200_OK
+
+        # else user does not exist. Return error message
+        response = {
+            'message': "Invalid Email or Password, Please Try again"
+        }
+        return response, status.HTTP_401_UNAUTHORIZED
+
+    except Exception as e:
+        # Create a response containing an string error message
+        response = {
+            'message': str(e)
+        }
+        return response, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    # if email in Users.user_db.keys():
+    #     if Users.user_db[email] == password:
+    #         session['user'] = email
+    #         message = {'message': 'you have successfully been logged in'}
+    #         return message, status.HTTP_200_OK
+    #     else:
+    #         raise exceptions.AuthenticationFailed()
+    # raise exceptions.AuthenticationFailed()
 
 
 @app.route('/api/auth/logout/', methods=['POST'])
