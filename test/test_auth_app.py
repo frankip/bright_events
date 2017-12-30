@@ -5,7 +5,8 @@ from __future__ import absolute_import
 
 import unittest
 import json
-from app import app
+from config import app_config
+from app import app, db
 
 
 class UserAuthTestcase(unittest.TestCase):
@@ -14,6 +15,7 @@ class UserAuthTestcase(unittest.TestCase):
     def setUp(self):
         """Set up test variables."""
         self.app = app
+        self.app.config.from_object(app_config['testing'])
         self.client = self.app.test_client
         self.user_data = {
             'first_name': 'new',
@@ -21,6 +23,12 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'test@example.com',
             'password': 'test_password'
             }
+        
+        with self.app.app_context():
+            #create all tables
+            db.session.close()
+            db.drop_all()
+            db.create_all()
 
     def test_user_registration(self):
         """Test user registration works correcty."""

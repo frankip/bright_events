@@ -55,19 +55,27 @@ def registration():
         message = {"message": "Password can not be empty"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    # instantiate a user from the user class
-    user = Users(fname, lname, email, password)
-
     # check if the user is already registered
-    if email in Users.user_db.keys():
-        message = {"message": "User already exists. Please login."}
+    user = User.query.filter_by(email=email.first()
+    
+    if not user:
+        # There is no user so we'll try to register them
+        try:
+            # instantiate a user from the user class
+            user = Users(fname, lname, email, password)
+            # create new user and save them to the database
+            user.save()
+            message={'message': "user has been created"}
+            return message, status.HTTP_201_CREATED
+        except Exception as e:
+            # An error occured, therefore return a string message containing the error
+            message = {'message':str(e)}
+            return message,status.HTTP_401_UNAUTHORIZED
+    else:
+        # There is an existing user. We don't want to register users twice
+        # Return a message to the user telling them that they they already exist
+        message={'message': 'User already exists. Please login.'}
         return message, status.HTTP_202_ACCEPTED
-
-    # if new user save them to the database
-    user.save()
-    message = {'message': "user has been created"}
-    return message, status.HTTP_201_CREATED
-
 
 @app.route('/api/auth/login/', methods=['POST'])
 @swag_from('flasgger/auth_login.yml', methods=['POST'])
