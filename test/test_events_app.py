@@ -4,6 +4,7 @@ This files test the events end point functionality
 from __future__ import absolute_import
 
 import unittest
+import json
 from config import app_config
 from app import app,db
 
@@ -32,24 +33,63 @@ class TestEventsItem(unittest.TestCase):
             # create all tables
             db.create_all()
 
+    def register_user(self):
+        """This helper method helps register a test user."""
+        user_data = {
+            'first_name': 'new',
+            'last_name': 'user',
+            'email': 'frank@test.com',
+            'password': 'test_password'
+        }
+        return self.client().post('/api/auth/register/', data=user_data)
+
+    def login_user(self):
+        """This helper method helps log in a test user."""
+        user_data = {
+            'email': 'frank@test.com',
+            'password': 'test_password'
+        }
+        return self.client().post('/api/auth/login/', data=user_data)
 
     def test_create_event(self):
         """Test API can create an event (POST request)"""
-        resp = self.client().post('/api/events/', data=self.new_event)
+        #register a user then log them in
+        self.register_user()
+        result = self.login_user()
+        #obtain the access token
+        access_token = json.loads(result.data.decode())['access_token']
+
+        resp = self.client().post(
+            '/api/events/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.new_event)
         self.assertEqual(resp.status_code, 201)
         self.assertIn('Barbecue party', str(resp.data))
 
     def test_retrieve_all_events(self):
         """Test API can retrieve all events (GET request)."""
-        resp = self.client().post('/api/events/', data=self.new_event)
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        resp = self.client().post(
+            '/api/events/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.new_event)
         self.assertEqual(resp.status_code, 201)
         resp = self.client().get('/api/events/')
         self.assertIn('Barbecue', str(resp.data))
 
-
     def test_retrieve_single_event(self):
         """Test API can retrieve a single event by using it's id.(GET request)."""
-        resp = self.client().post('/api/events/', data=self.new_event)
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        resp = self.client().post(
+            '/api/events/',
+            headers=dict(Authorization="Bearer" + access_token),
+            data=self.new_event)
         self.assertEqual(resp.status_code, 201)
         result = self.client().get(
             '/api/events/{}/'.format(1))
@@ -58,21 +98,42 @@ class TestEventsItem(unittest.TestCase):
 
     def test_update_event(self):
         """Test API can edit an existing event. (PUT request)"""
-        resp = self.client().post('api/events/', data=self.new_event)
+
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        resp = self.client().post(
+            'api/events/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.new_event)
         self.assertEqual(resp.status_code, 201)
-        resp = self.client().put('api/events/1/', data=self.update_event)
+        resp = self.client().put(
+            'api/events/1/',
+            headers = dict(Authorization="Bearer " + access_token),
+            data=self.update_event)
         self.assertEqual(resp.status_code, 201)
         new_ = self.client().get('api/events/1/')
         self.assertIn('Burger', str(new_.data))
 
     def test_event_deletion(self):
         """Test API can delete an existing event. (DELETE request)."""
-        resp = self.client().post('/api/events/', data=self.new_event)
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        resp = self.client().post(
+            '/api/events/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.new_event)
         self.assertEqual(resp.status_code, 201)
-        res = self.client().delete('/api/events/1/')
+        res = self.client().delete(
+            '/api/events/1/',
+            headers = dict(Authorization="Bearer " + access_token)),
         self.assertEqual(res.status_code, 200)
         # Test to see if it exists, should return a 404
-        result = self.client().get('/api/events/1/')
+        result = self.client().get(
+            '/api/events/1/')
         self.assertEqual(result.status_code, 404)
 
     def tearDown(self):
