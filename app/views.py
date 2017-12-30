@@ -161,27 +161,37 @@ def reset_password():
 @swag_from('flasgger/event_post.yml', methods=['POST'])
 def events_list():
     """List or create events."""
-    if request.method == 'POST':
-        event = request.data.get('event')
-        location = request.data.get('location')
-        date = request.data.get('date')
+    # Get the access token from the header
+    auth_header = request.headers.get('Authorization')
+    access_token = auth_header.split(" ")[1]
 
-        if event is None or location is None or date is None:
-            message = {'message': 'inputs cannot be empty, please fill all inputs'}
-            return message, status.HTTP_400_BAD_REQUEST
+    if access_token:
+        # Attempt to decode the token and get the User ID
+        user_id = Users.decode_token(access_token)
+        if not isinstance(user_id, str):
+            # Go ahead and handle the request, the user is authenticated
+            if request.method == 'POST':
+                event = request.data.get('event')
+                location = request.data.get('location')
+                date = request.data.get('date')
 
-        inst = Events(event, location, date)
-        inst.save()
-        response = jsonify({
-            'id': inst.id,
-            'event': inst.event,
-            'location': inst.location,
-            'date': inst.date
-        })
-        return response, status.HTTP_201_CREATED
+                if event is None or location is None or date is None:
+                    message = {'message': 'inputs cannot be empty, please fill all inputs'}
+                    return message, status.HTTP_400_BAD_REQUEST
+
+                inst = Events(event, location, date, created_by=user_id)
+                inst.save()
+                response = jsonify({
+                    'id': inst.id,
+                    'event': inst.event,
+                    'location': inst.location,
+                    'date': inst.date
+                })
+                return response, status.HTTP_201_CREATED
 
     # request.method == 'GET'
-    events = Events.get_all()
+    # GET all the bucketlists created by this user
+    events = Events.query.filter_by(created_by=user_id)
     results = []
     for event in events:
         obj = {
