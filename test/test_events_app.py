@@ -6,7 +6,7 @@ from __future__ import absolute_import
 import unittest
 import json
 from config import app_config
-from app import app,db
+from app import app, db
 
 
 class TestEventsItem(unittest.TestCase):
@@ -77,7 +77,9 @@ class TestEventsItem(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),
             data=self.new_event)
         self.assertEqual(resp.status_code, 201)
-        resp = self.client().get('/api/events/')
+        resp = self.client().get(
+            '/api/events/',
+            headers=dict(Authorization="Bearer " + access_token),)
         self.assertIn('Barbecue', str(resp.data))
 
     def test_retrieve_single_event(self):
@@ -92,7 +94,8 @@ class TestEventsItem(unittest.TestCase):
             data=self.new_event)
         self.assertEqual(resp.status_code, 201)
         result = self.client().get(
-            '/api/events/{}/'.format(1))
+            '/api/events/{}/'.format(1),
+            headers=dict(Authorization="Bearer " + access_token),)
         self.assertEqual(result.status_code, 200)
         self.assertIn('Barbecue', str(result.data))
 
@@ -113,7 +116,9 @@ class TestEventsItem(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),
             data=self.update_event)
         self.assertEqual(resp.status_code, 201)
-        new_ = self.client().get('api/events/1/')
+        new_ = self.client().get(
+            'api/events/1/',
+            headers=dict(Authorization="Bearer " + access_token),)
         self.assertIn('Burger', str(new_.data))
 
     def test_event_deletion(self):
@@ -133,7 +138,8 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         # Test to see if it exists, should return a 404
         result = self.client().get(
-            '/api/events/1/')
+            '/api/events/1/',
+            headers=dict(Authorization="Bearer " + access_token),)
         self.assertEqual(result.status_code, 404)
 
     def tearDown(self):
@@ -146,4 +152,4 @@ class TestEventsItem(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
+

@@ -166,7 +166,7 @@ def events_list():
         if not isinstance(user_id, str):
             # Go ahead and handle the request, the user is authenticated
             if request.method == 'POST':
-                
+
                 event = request.data.get('event')
                 location = request.data.get('location')
                 date = request.data.get('date')
@@ -199,12 +199,12 @@ def events_list():
                 results.append(obj)
             return results, status.HTTP_200_OK
         else:
-                # user is not legit, so the payload is an error message
-                message = user_id
-                response = {
-                    'message': message
-                }
-                return response, status.HTTP_401_UNAUTHORIZED
+            # user is not legit, so the payload is an error message
+            message = user_id
+            response = {
+                'message': message
+            }
+            return response, status.HTTP_401_UNAUTHORIZED
 
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
@@ -214,47 +214,65 @@ def events_list():
 def events_details(key):
     """Retrieve, update or delete events instances."""
 
-    #Retrieve Events by id
-    get_event = Events.query.filter_by(id=key).first()
+    # get the access token from the authorization header
+    auth_header = request.headers.get('Authorization')
+    access_token = auth_header.split(" ")[1]
 
-    if not get_event:
-        #if there is no event Rise Not found exception
-        raise exceptions.NotFound()
-    
-    if request.method == 'PUT':
-        event = request.data.get('event')
-        location = request.data.get('location')
-        date = request.data.get('date')
+    if access_token:
+        # Get the user id related to this access token
+        user_id = Users.decode_token(access_token)
 
-        if event is None or location is None or date is None:
-            return {'message': 'inputs cannot be empty, please fill all inputs'}
+        if not isinstance(user_id, str):
+            # If the id is not a string(error), we have a user id
+            #Retrieve Events by id
+            get_event = Events.query.filter_by(id=key).first()
 
-        get_event.event = event
-        get_event.location = location
-        get_event.date = date
-        #save the updated event
-        get_event.save()
-        response = {
-            'id': get_event.id,
-            'event': get_event.event,
-            'location': get_event.location,
-            'date': get_event.date
-        }
-        return response, status.HTTP_201_CREATED
-    
-    elif request.method == "DELETE":
-        get_event.delete()
-        message = {"message": "Deleted succesfully"}
-        return message, status.HTTP_204_NO_CONTENT
+            if not get_event:
+                #if there is no event Rise Not found exception
+                raise exceptions.NotFound()
 
-    # request.method == 'GET':
-    response = {
-        'id': get_event.id,
-        'event': get_event.event,
-        'location': get_event.location,
-        'date': get_event.date
-    }
-    return response, status.HTTP_200_OK
+            if request.method == 'PUT':
+                event = request.data.get('event')
+                location = request.data.get('location')
+                date = request.data.get('date')
+
+                if event is None or location is None or date is None:
+                    return {'message': 'inputs cannot be empty, please fill all inputs'}
+
+                get_event.event = event
+                get_event.location = location
+                get_event.date = date
+                #save the updated event
+                get_event.save()
+                response = {
+                    'id': get_event.id,
+                    'event': get_event.event,
+                    'location': get_event.location,
+                    'date': get_event.date
+                }
+                return response, status.HTTP_201_CREATED
+
+            elif request.method == "DELETE":
+                get_event.delete()
+                message = {"message": "Deleted succesfully"}
+                return message, status.HTTP_204_NO_CONTENT
+
+            # request.method == 'GET':
+            response = {
+                'id': get_event.id,
+                'event': get_event.event,
+                'location': get_event.location,
+                'date': get_event.date
+            }
+            return response, status.HTTP_200_OK
+        else:
+            # user is not legit, so the payload is an error message
+            message = user_id
+            response = {
+                'message': message
+            }
+            # return an error response, telling the user he is Unauthorized
+            return response, status.HTTP_401_UNAUTHORIZED
 
 
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])

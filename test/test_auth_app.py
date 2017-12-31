@@ -65,7 +65,7 @@ class UserAuthTestcase(unittest.TestCase):
         res = self.client().post('/api/auth/login/', data=not_a_user)
         self.assertEqual(res.status_code, 401)
 
-    def test_duplicate_usernames(self):
+    def test_duplicate_emails(self):
         """Test that a user cannot be registered twice."""
         self.client().post('/api/auth/register/', data=self.user_data)
         resp_2 = self.client().post('/api/auth/register/', data=self.user_data)
@@ -74,4 +74,3 @@ class UserAuthTestcase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
