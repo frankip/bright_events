@@ -7,6 +7,13 @@ from passlib.apps import custom_app_context as pwd_context
 
 from app import db, app
 
+# association table
+# associates userstable to events table
+rsvp = db.Table('rsvps',
+                 db.Column('user_id', db.Integer, db.ForeignKey('user_db.id')),
+                 db.Column('event_id', db.Integer,
+                           db.ForeignKey('events_db.id'))
+                 )
 class Users(db.Model):
     """
     This class handles all the logic and methods
@@ -22,6 +29,9 @@ class Users(db.Model):
     lname = db.Column(db.String(256), nullable=False)
     event = db.relationship(
         'Events', order_by='Events.id', cascade="all, delete-orphan"
+    )
+    event_rsvp = db.relationship(
+        'Events', secondary=rsvp, backref=db.backref('rsvp', lazy='dynamic')
     )
 
     def __init__(self, fname, lname, email, password):
@@ -110,6 +120,19 @@ class Events(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+    def rsvp_user(self, user):
+        if not self.already_rsvpd(user):
+            #Get user object
+            usr = Users.query.filter_by(id=user).first()
+            self.rsvp.append(usr)
+            self.save()
+            return "Thank you for RSVP to the event"
+        return "You have already RSVP'd to this event"
+
+    def already_rsvpd(self, user):
+        return self.rsvp.filter_by(
+            id=user).first() is not None
 
     @staticmethod
     def get_all(user_id):
