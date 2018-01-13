@@ -104,7 +104,6 @@ class Events(db.Model):
     This class hold the logic and methods for the
     events
     """
-
     __tablename__ = 'events_db'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -118,7 +117,6 @@ class Events(db.Model):
         self.location = location
         self.date = date
         self.created_by = created_by
-        self.rsvp = []
 
     def save(self):
         """
