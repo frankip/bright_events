@@ -32,7 +32,7 @@ class TestEventsItem(unittest.TestCase):
         with self.app.app_context():
             # create all tables
             db.create_all()
-
+            
     def register_user(self):
         """This helper method helps register a test user."""
         user_data = {
@@ -64,7 +64,10 @@ class TestEventsItem(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),
             data=self.new_event)
         self.assertEqual(resp.status_code, 201)
-        self.assertIn('Barbecue party', str(resp.data))
+        result = self.client().get(
+            '/api/events/{}/'.format(1))
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Barbecue', str(result.data))
 
     def test_retrieve_all_events(self):
         """Test API can retrieve all events (GET request)."""

@@ -37,6 +37,7 @@ def registration():
         message = {"message": "ensure the first name is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
+
     if lname is None or lname.strip == "" or not lname.isalpha():
         message = {"message": "ensure the last name is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
@@ -87,7 +88,7 @@ def login():
     if email is None or password is None:
         message = {'message': 'inputs cannot be empty'}
         return message, status.HTTP_400_BAD_REQUEST
-
+      
     try:
         # Get the user object using their email (unique to every user)
         user = Users.query.filter_by(email=email).first()
@@ -213,7 +214,6 @@ def events_list():
 @swag_from('flasgger/event_details_delete.yml', methods=['DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""
-
     # get the access token from the authorization header
     auth_header = request.headers.get('Authorization')
     access_token = auth_header.split(" ")[1]
@@ -271,7 +271,7 @@ def events_details(key):
             }
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
-
+          
 
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])
 @swag_from('flasgger/event_rsvp_get.yml', methods=['GET'])
