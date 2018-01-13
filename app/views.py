@@ -2,13 +2,16 @@
 this files contains the logic and the routes of the app
 """
 import re
-from flask import request, url_for, session
+from flask import request, url_for, session, jsonify
 from flask_api import status, exceptions
 from flasgger import Swagger
 from flasgger.utils import swag_from
 
+#local imports
 from app import app
 from . models import Users, Events
+
+#flassger api documentation
 Swagger(app)
 
 
@@ -132,14 +135,27 @@ def events_list():
             return message, status.HTTP_400_BAD_REQUEST
 
         inst = Events(event, location, date)
-        ids_ = inst.add_event()
-        message = {
-            "message": "event created",
-            "object": api_view(ids_)}
-        return message, status.HTTP_201_CREATED
+        inst.save()
+        response = jsonify({
+            'id': inst.id,
+            'event': inst.event,
+            'location': inst.location,
+            'date': inst.date
+        })
+        return response, status.HTTP_201_CREATED
 
     # request.method == 'GET'
-    return [api_view(ids_) for ids_ in sorted(Events.events_db.keys())]
+    events = Events.get_all()
+    results = []
+    for event in events:
+        obj = {
+            'id': event.id,
+            'event': event.event,
+            'location': event.location,
+            'date': event.date
+        }
+        results.append(obj)
+    return results, status.HTTP_200_OK
 
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
@@ -148,9 +164,14 @@ def events_list():
 @swag_from('flasgger/event_details_delete.yml', methods=['DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""
-    if key not in Events.events_db:
-        raise exceptions.NotFound()
 
+    #Retrieve Events by id
+    get_event = Events.query.filter_by(id=key).first()
+
+    if not get_event:
+        #if there is no event Rise Not found exception
+        raise exceptions.NotFound()
+    
     if request.method == 'PUT':
         event = request.data.get('event')
         location = request.data.get('location')
@@ -159,21 +180,32 @@ def events_details(key):
         if event is None or location is None or date is None:
             return {'message': 'inputs cannot be empty, please fill all inputs'}
 
-        new_dat = dict(
-            event=event,
-            location=location,
-            date=date
-        )
-        Events.events_db[key] = new_dat
-        message = {"message": "event updated", "object": api_view(key)}
-        return message, status.HTTP_201_CREATED
-
+        get_event.event = event
+        get_event.location = location
+        get_event.date = date
+        #save the updated event
+        get_event.save()
+        response = {
+            'id': get_event.id,
+            'event': get_event.event,
+            'location': get_event.location,
+            'date': get_event.date
+        }
+        return response, status.HTTP_201_CREATED
+    
     elif request.method == "DELETE":
-        Events.events_db.pop(key, None)
+        get_event.delete()
         message = {"message": "Deleted succesfully"}
         return message, status.HTTP_204_NO_CONTENT
 
-    return api_view(key)
+    # request.method == 'GET':
+    response = {
+        'id': get_event.id,
+        'event': get_event.event,
+        'location': get_event.location,
+        'date': get_event.date
+    }
+    return response, status.HTTP_200_OK
 
 
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])

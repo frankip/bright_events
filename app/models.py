@@ -4,6 +4,7 @@ This files handles all the database logic and instances
 import itertools
 from passlib.apps import custom_app_context as pwd_context
 
+from app import db
 
 class Users:
     """
@@ -55,28 +56,50 @@ class Users:
         # return pwd_context.verify(password, self.password)
 
 
-class Events():
+
+class Events(db.Model):
     """
     This class hold the logic and methods for the
     events
     """
-    events_db = {}
-    id_generator = itertools.count(1)
+    # events_db = {}
+    # id_generator = itertools.count(1)
+
+    __tablename__ = 'events_db'
+
+    id = db.Column(db.Integer, primary_key=True)
+    event = db.Column(db.String(255))
+    location = db.Column(db.String(255))
+    date = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     def __init__(self, event, location, date):
-        self.ids_ = next(self.id_generator)
         self.event = event
         self.location = location
         self.date = date
         self.rsvp = []
 
-    def add_event(self):
-        """handles adding events to dictonary"""
-        new_data = dict(
-            event=self.event,
-            location=self.location,
-            date=self.date,
-            rsvp=self.rsvp
-        )
-        self.events_db[self.ids_] = new_data
-        return self.ids_
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all():
+        return Events.query.all()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def __repr__(self):
+        return "<Events: {}>".format(self.event)
+
+    # def add_event(self):
+    #     """handles adding events to dictonary"""
+    #     new_data = dict(
+    #         event=self.event,
+    #         location=self.location,
+    #         date=self.date,
+    #         rsvp=self.rsvp
+    #     )
+    #     self.events_db[self.ids_] = new_data
+    #     return self.ids_
