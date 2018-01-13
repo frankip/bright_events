@@ -260,8 +260,7 @@ def events_details(key):
                 'id': get_event.id,
                 'event': get_event.event,
                 'location': get_event.location,
-                'date': get_event.date,
-                'rsvp': get_event.rsvp
+                'date': get_event.date
             }
             return response, status.HTTP_200_OK
         else:
@@ -297,9 +296,6 @@ def rsvp_event(key):
                 #if there is no event Rise Not found exception
                 raise exceptions.NotFound()
 
-            # events = Events.events_db[key]
-            rsvp_list = get_event.rsvp.all()
-
             if request.method == "POST":
                 if not get_event.already_rsvpd(user_id):
                     get_event.rsvp_user(user_id)
@@ -308,6 +304,8 @@ def rsvp_event(key):
                         }, status.HTTP_201_CREATED
                 return {"message":"You have already RSVP'd to this event"}, status.HTTP_202_ACCEPTED
 
+            # request method GET
+            rsvp_list = get_event.rsvp.all()
             return [users.get_full_names() for users in rsvp_list], status.HTTP_200_OK
         else:
             # user is not legit, so the payload is an error message
