@@ -64,10 +64,7 @@ class TestEventsItem(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),
             data=self.new_event)
         self.assertEqual(resp.status_code, 201)
-        result = self.client().get(
-            '/api/events/{}/'.format(1))
-        self.assertEqual(result.status_code, 200)
-        self.assertIn('Barbecue', str(result.data))
+        self.assertIn('Barbecue party', str(resp.data))
 
     def test_retrieve_all_events(self):
         """Test API can retrieve all events (GET request)."""
