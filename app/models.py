@@ -7,13 +7,12 @@ from passlib.apps import custom_app_context as pwd_context
 
 from app import db, app
 
-# association table
-# associates userstable to events table
+#association table that associates userstable to events table
 rsvp = db.Table('rsvps',
-                 db.Column('user_id', db.Integer, db.ForeignKey('user_db.id')),
-                 db.Column('event_id', db.Integer,
-                           db.ForeignKey('events_db.id'))
-                 )
+                db.Column('user_id', db.Integer, db.ForeignKey('user_db.id')),
+                db.Column('event_id', db.Integer,
+                          db.ForeignKey('events_db.id'))
+               )
 class Users(db.Model):
     """
     This class handles all the logic and methods
@@ -82,6 +81,10 @@ class Users(db.Model):
             # return an error in string format if an exception occurs
             return str(e)
 
+    def get_full_names(self):
+        """Returns the full namesod user"""
+        return self.fname +' '+ self.lname
+
     @staticmethod
     def decode_token(token):
         """Decodes the access token from the Authorization header."""
@@ -118,27 +121,37 @@ class Events(db.Model):
         self.rsvp = []
 
     def save(self):
+        """
+        Save changes to the database
+        """
         db.session.add(self)
         db.session.commit()
 
     def rsvp_user(self, user):
-        if not self.already_rsvpd(user):
-            #Get user object
-            usr = Users.query.filter_by(id=user).first()
-            self.rsvp.append(usr)
-            self.save()
-            return "Thank you for RSVP to the event"
-        return "You have already RSVP'd to this event"
+        """
+        Add user to the rsvp list
+        """
+        #Get user object
+        usr = Users.query.filter_by(id=user).first()
+        self.rsvp.append(usr)
+        self.save()
 
     def already_rsvpd(self, user):
+        """
+        check if the user has already rsvpd to the event
+        """
         return self.rsvp.filter_by(
             id=user).first() is not None
 
     @staticmethod
     def get_all(user_id):
+        """
+        Get all the events created by the user
+        """
         return Events.query.filter_by(created_by=user_id)
 
     def delete(self):
+        """Removes a record from the database"""
         db.session.delete(self)
         db.session.commit()
 

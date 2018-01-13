@@ -2,7 +2,7 @@
 this files contains the logic and the routes of the app
 """
 import re
-from flask import request, url_for, session, jsonify
+from flask import request, session, jsonify
 from flask_api import status, exceptions
 from flasgger import Swagger
 from flasgger.utils import swag_from
@@ -221,12 +221,10 @@ def events_details(key):
     if access_token:
         # Get the user id related to this access token
         user_id = Users.decode_token(access_token)
-
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
             #Retrieve Events by id
             get_event = Events.query.filter_by(id=key).first()
-
             if not get_event:
                 #if there is no event Rise Not found exception
                 raise exceptions.NotFound()
@@ -248,7 +246,7 @@ def events_details(key):
                     'id': get_event.id,
                     'event': get_event.event,
                     'location': get_event.location,
-                    'date': get_event.date
+                    'date': get_event.date,
                 }
                 return response, status.HTTP_201_CREATED
 
@@ -262,7 +260,8 @@ def events_details(key):
                 'id': get_event.id,
                 'event': get_event.event,
                 'location': get_event.location,
-                'date': get_event.date
+                'date': get_event.date,
+                'rsvp': get_event.rsvp
             }
             return response, status.HTTP_200_OK
         else:
@@ -280,25 +279,41 @@ def events_details(key):
 @swag_from('flasgger/event_rsvp_post.yml', methods=['POST'])
 def rsvp_event(key):
     """ Handles the RSVP logic"""
-    if key not in Events.events_db:
-        raise exceptions.NotFound()
 
-    events = Events.events_db[key]
-    rsvp_list = events['rsvp']
-    if request.method == "POST":
-        email = request.data.get('email')
-        if email is None:
-            return{"message": "can not rsvp empty inputs"}
-        rsvp_list.append(email)
-        return {'message': "email added to RSVP",
-                "object": rsvp_list}, status.HTTP_201_CREATED
-    return rsvp_list
+    # get the access token from the authorization header
+    auth_header = request.headers.get('Authorization')
+    access_token = auth_header.split(" ")[1]
 
+    if access_token:
+        # Get the user id related to this access token
+        user_id = Users.decode_token(access_token)
 
-def api_view(key):
-    """Handles how the data will be in the browsable api"""
-    return {
-        'rsvp_url': request.host_url.rstrip('/') + url_for('rsvp_event', key=key),
-        'url': request.host_url.rstrip('/') + url_for('events_details', key=key),
-        'event': Events.events_db[key],
-    }
+        if not isinstance(user_id, str):
+            # If the id is not a string(error), we have a user id
+            #Retrieve Events by id
+            get_event = Events.query.filter_by(id=key).first()
+
+            if not get_event:
+                #if there is no event Rise Not found exception
+                raise exceptions.NotFound()
+
+            # events = Events.events_db[key]
+            rsvp_list = get_event.rsvp.all()
+
+            if request.method == "POST":
+                if not get_event.already_rsvpd(user_id):
+                    get_event.rsvp_user(user_id)
+                    return {
+                        'message': "Thank you for registering to attend this event"
+                        }, status.HTTP_201_CREATED
+                return {"message":"You have already RSVP'd to this event"}, status.HTTP_202_ACCEPTED
+
+            return [users.get_full_names() for users in rsvp_list], status.HTTP_200_OK
+        else:
+            # user is not legit, so the payload is an error message
+            message = user_id
+            response = {
+                'message': message
+            }
+            # return an error response, telling the user he is Unauthorized
+            return response, status.HTTP_401_UNAUTHORIZED
