@@ -2,7 +2,7 @@
 this files contains the logic and the routes of the app
 """
 import re
-from flask import request, session, jsonify
+from flask import request, session
 from flask_api import status, exceptions
 from flasgger import Swagger
 from flasgger.utils import swag_from
@@ -53,7 +53,7 @@ def registration():
 
     # check if the user is already registered
     # Query to see if the user already exists
-    user = Users.query.filter_by(email=email).first()
+    user = Users.check_user(email)
 
     if not user:
         # There is no user so we'll try to register them
@@ -88,13 +88,12 @@ def login():
     if email is None or password is None:
         message = {'message': 'inputs cannot be empty'}
         return message, status.HTTP_400_BAD_REQUEST
-      
+
     try:
         # Get the user object using their email (unique to every user)
-        user = Users.query.filter_by(email=email).first()
-
+        user = Users.check_user(email)
         # Try to authenticate the found user using their password
-        if user and password:
+        if user and user.verify_password(password):
             # Generate the access token. This will be used as the authorization header
             access_token = user.generate_token(user.id)
             if access_token:
@@ -116,15 +115,6 @@ def login():
             'message': str(e)
         }
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR
-
-    # if email in Users.user_db.keys():
-    #     if Users.user_db[email] == password:
-    #         session['user'] = email
-    #         message = {'message': 'you have successfully been logged in'}
-    #         return message, status.HTTP_200_OK
-    #     else:
-    #         raise exceptions.AuthenticationFailed()
-    # raise exceptions.AuthenticationFailed()
 
 
 @app.route('/api/auth/logout/', methods=['POST'])
@@ -178,17 +168,17 @@ def events_list():
 
                 inst = Events(event, location, date, created_by=user_id)
                 inst.save()
-                response = jsonify({
+                response = {
                     'id': inst.id,
                     'event': inst.event,
                     'location': inst.location,
                     'date': inst.date
-                })
+                }
                 return response, status.HTTP_201_CREATED
 
             # request.method == 'GET'
-            # GET all the bucketlists created by this user
-            events = Events.query.filter_by(created_by=user_id)
+            # GET all the events created by this user
+            events = Events.get_all(user_id)
             results = []
             for event in events:
                 obj = {
@@ -224,7 +214,7 @@ def events_details(key):
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
             #Retrieve Events by id
-            get_event = Events.query.filter_by(id=key).first()
+            get_event = Events.get_single_event(key)
             if not get_event:
                 #if there is no event Rise Not found exception
                 raise exceptions.NotFound()
@@ -271,7 +261,6 @@ def events_details(key):
             }
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
-          
 
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])
 @swag_from('flasgger/event_rsvp_get.yml', methods=['GET'])
@@ -290,7 +279,7 @@ def rsvp_event(key):
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
             #Retrieve Events by id
-            get_event = Events.query.filter_by(id=key).first()
+            get_event = Events.get_single_event(key)
 
             if not get_event:
                 #if there is no event Rise Not found exception

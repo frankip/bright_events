@@ -109,6 +109,14 @@ the endpoints for the API are
 
 use the API documentation to get sample data of payload [Here](https://eventsbright.herokuapp.com/apidocs/#/)
 
+do not forget to include the headers on your postman 
+ - Content-Type: application/json
+ - Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiO
+
+make sure to register and login first to get the authorization token.
+Copy the token and paste it into the header section, creating an Authorization header. Don't forget to put the word Bearer before the token with a space separating them like this:
+
+```Bearer eyJ0eXATQsImV4cCI6ViIjo1fQ.8ju7doEn6Q8VJ6WXAnBHKlyn8KCkMr....```
 ## Test /api/auth/register/
     
     curl -H "Accept: application/json"\-H "Content-type: application/json" -X POST \

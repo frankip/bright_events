@@ -37,28 +37,26 @@ class Users(db.Model):
         self.fname = fname
         self.lname = lname
         self.email = email
-        self.password = password
+        self.password = pwd_context.encrypt(password)
 
     def save(self):
         """Creates a new user and saves to the database"""
         db.session.add(self)
         db.session.commit()
 
-    def check_user(self, email):
+    @staticmethod
+    def check_user(email):
         """
         This method takes in a email and
-        checks if its in the dictonary
+        checks if its in the database
         """
-        # if email in self.user_db.keys():
-        #     return "User already exists. Please login.", 201
-        # return False
-        pass
+        return Users.query.filter_by(email=email).first()
 
     def verify_password(self, password):
         """
         check pasword provided with hash in db
         """
-        return pwd_context.verify(self.password, password)
+        return pwd_context.verify(password, self.password)
 
     def generate_token(self, user_id):
         """Generating the access token"""
@@ -142,11 +140,15 @@ class Events(db.Model):
             id=user).first() is not None
 
     @staticmethod
-    def get_all(user_id):
+    def get_all_events(user_id):
         """
         Get all the events created by the user
         """
         return Events.query.filter_by(created_by=user_id)
+
+    def get_single_event(key):
+        """Retrieves a single event"""
+        return Events.query.filter_by(id=key).first()
 
     def delete(self):
         """Removes a record from the database"""
