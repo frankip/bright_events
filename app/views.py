@@ -178,7 +178,7 @@ def events_list():
 
             # request.method == 'GET'
             # GET all the events created by this user
-            events = Events.get_all(user_id)
+            events = Events.get_all_events(user_id)
             results = []
             for event in events:
                 obj = {
