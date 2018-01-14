@@ -146,6 +146,7 @@ class Events(db.Model):
         """
         return Events.query.filter_by(created_by=user_id)
 
+    @staticmethod
     def get_single_event(key):
         """Retrieves a single event"""
         return Events.query.filter_by(id=key).first()

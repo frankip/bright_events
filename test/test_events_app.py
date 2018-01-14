@@ -32,7 +32,7 @@ class TestEventsItem(unittest.TestCase):
         with self.app.app_context():
             # create all tables
             db.create_all()
-            
+
     def register_user(self):
         """This helper method helps register a test user."""
         user_data = {
@@ -51,14 +51,18 @@ class TestEventsItem(unittest.TestCase):
         }
         return self.client().post('/api/auth/login/', data=user_data)
 
-    def test_create_event(self):
-        """Test API can create an event (POST request)"""
+    def get_auth(self):
+        """Helper method to register and login user and get access token"""
         #register a user then log them in
         self.register_user()
         result = self.login_user()
         #obtain the access token
-        access_token = json.loads(result.data.decode())['access_token']
+        return json.loads(result.data.decode())['access_token']
 
+
+    def test_create_event(self):
+        """Test API can create an event (POST request)"""
+        access_token = self.get_auth()
         resp = self.client().post(
             '/api/events/',
             headers=dict(Authorization="Bearer " + access_token),
@@ -68,10 +72,7 @@ class TestEventsItem(unittest.TestCase):
 
     def test_retrieve_all_events(self):
         """Test API can retrieve all events (GET request)."""
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
+        access_token = self.get_auth()
         resp = self.client().post(
             '/api/events/',
             headers=dict(Authorization="Bearer " + access_token),
@@ -84,10 +85,7 @@ class TestEventsItem(unittest.TestCase):
 
     def test_retrieve_single_event(self):
         """Test API can retrieve a single event by using it's id.(GET request)."""
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
+        access_token = self.get_auth()
         resp = self.client().post(
             '/api/events/',
             headers=dict(Authorization="Bearer " + access_token),
@@ -101,11 +99,7 @@ class TestEventsItem(unittest.TestCase):
 
     def test_update_event(self):
         """Test API can edit an existing event. (PUT request)"""
-
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
+        access_token = self.get_auth()
         resp = self.client().post(
             'api/events/',
             headers=dict(Authorization="Bearer " + access_token),
@@ -123,10 +117,7 @@ class TestEventsItem(unittest.TestCase):
 
     def test_event_deletion(self):
         """Test API can delete an existing event. (DELETE request)."""
-        self.register_user()
-        result = self.login_user()
-        access_token = json.loads(result.data.decode())['access_token']
-
+        access_token = self.get_auth()
         resp = self.client().post(
             '/api/events/',
             headers=dict(Authorization="Bearer " + access_token),
@@ -152,4 +143,3 @@ class TestEventsItem(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
