@@ -20,11 +20,13 @@ class TestEventsItem(unittest.TestCase):
         self.new_event = {
             "event": "Barbecue party",
             "location": "nairobi",
+            "category": "Food",
             "date": "12/12/2017"
         }
         self.update_event = {
             "event": "Burger Fest",
             "location": "Ngong",
+            "category": "Food",
             "date": "12/12/2017"
         }
 
@@ -58,7 +60,6 @@ class TestEventsItem(unittest.TestCase):
         result = self.login_user()
         #obtain the access token
         return json.loads(result.data.decode())['access_token']
-
 
     def test_create_event(self):
         """Test API can create an event (POST request)"""

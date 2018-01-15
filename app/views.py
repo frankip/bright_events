@@ -121,7 +121,7 @@ def login():
 @swag_from('flasgger/auth_logout.yml', methods=['POST'])
 def logout():
     """User Logout endpoints logs out a user"""
-    if 'user' not in session:
+if 'user' not in session:
         message = {"message": "you have to login first"}
         return message, status.HTTP_401_UNAUTHORIZED
     session.pop('user')
@@ -160,18 +160,20 @@ def events_list():
 
                 event = request.data.get('event')
                 location = request.data.get('location')
+                category = request.data.get('category')
                 date = request.data.get('date')
 
                 if event is None or location is None or date is None:
                     message = {'message': 'inputs cannot be empty, please fill all inputs'}
                     return message, status.HTTP_400_BAD_REQUEST
 
-                inst = Events(event, location, date, created_by=user_id)
+                inst = Events(event, location, category, date, created_by=user_id)
                 inst.save()
                 response = {
                     'id': inst.id,
                     'event': inst.event,
                     'location': inst.location,
+                    'category': inst.category,
                     'date': inst.date
                 }
                 return response, status.HTTP_201_CREATED
@@ -213,7 +215,7 @@ def events_details(key):
         user_id = Users.decode_token(access_token)
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
-            #Retrieve Events by id
+            # Retrieve Events by id
             get_event = Events.get_single_event(key)
             if not get_event:
                 #if there is no event Rise Not found exception

@@ -96,7 +96,7 @@ class Users(db.Model):
         except jwt.InvalidTokenError:
             #The token is invalid, return an error string
             return "Invalid token. Please register or login"
-
+            
 class Events(db.Model):
     """
     This class hold the logic and methods for the
@@ -107,12 +107,14 @@ class Events(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     event = db.Column(db.String(255))
     location = db.Column(db.String(255))
+    category = db.Column(db.String(255))
     date = db.Column(db.DateTime, default=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(Users.id))
 
-    def __init__(self, event, location, date, created_by):
+    def __init__(self, event, location, category, date, created_by):
         self.event = event
         self.location = location
+        self.category = category
         self.date = date
         self.created_by = created_by
 

@@ -1,5 +1,5 @@
 # app/__init__.py
-
+import os
 # Third party imports
 from flask_api import FlaskAPI, status, exceptions
 from flask_sqlalchemy import SQLAlchemy
@@ -14,9 +14,8 @@ db = SQLAlchemy()
 app = FlaskAPI(__name__, instance_relative_config=True)
 # Load the config file
 app.config.from_object(app_config['development'])
-app.secret_key = "secret_string"
+app.secret_key = os.getenv('SECRET')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/postgres'
 app.config['SWAGGER'] = {
     'title': 'Bright Events'
 }
