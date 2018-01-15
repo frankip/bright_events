@@ -89,6 +89,9 @@ class Users(db.Model):
         try:
             # try to decode the token using our SECRET variable
             payload = jwt.decode(token, app.secret_key)
+            blacklisted_token = BlackListToken.check_black_list(token)
+            if blacklisted_token:
+                return "You have logged out, Please log in to continue"
             return payload['sub']
         except jwt.ExpiredSignatureError:
             # The token is expired, return an error string
@@ -96,7 +99,37 @@ class Users(db.Model):
         except jwt.InvalidTokenError:
             #The token is invalid, return an error string
             return "Invalid token. Please register or login"
-            
+
+class BlackListToken(db.Model):
+    __tablename__ = 'blacklist_token'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    token = db.Column(db.String(500), unique=True, nullable=False)
+    blacklisted_on = db.Column(db.DateTime, nullable=False)
+
+    def __init__(self, token):
+        self.token = token
+        self.blacklisted_on = datetime.now()
+
+    def logout(self):
+        """
+        add the blacklisted token to database
+        """
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def check_black_list(token):
+        resp = BlackListToken.query.filter_by(token = str(token)).first()
+
+        if resp:
+            return True
+        
+        return False
+
+    def __repr__(self):
+        return '<id: token: {}'.format(self.token)
+
 class Events(db.Model):
     """
     This class hold the logic and methods for the

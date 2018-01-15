@@ -9,7 +9,7 @@ from flasgger.utils import swag_from
 
 #local imports
 from app import app
-from . models import Users, Events
+from . models import Users, Events, BlackListToken
 
 #flassger api documentation
 Swagger(app)
@@ -121,12 +121,32 @@ def login():
 @swag_from('flasgger/auth_logout.yml', methods=['POST'])
 def logout():
     """User Logout endpoints logs out a user"""
-if 'user' not in session:
-        message = {"message": "you have to login first"}
-        return message, status.HTTP_401_UNAUTHORIZED
-    session.pop('user')
-    message = {"message": "you have been logged out"}
-    return message, status.HTTP_200_OK
+
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        try:
+            access_token = auth_header.split(' ')[1]
+        except IndexError:
+            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
+
+    else:
+        access_token = ''
+
+    if access_token:
+        # Attempt to decode the token and get the User ID
+        user_id = Users.decode_token(access_token)
+        if not isinstance(user_id, str):
+            blacklist_token = BlackListToken(token=access_token)
+
+            try:
+                blacklist_token.logout()
+                return {"message":"succesfully logged out"}, status.HTTP_200_OK
+            except Exception as error:
+                return {"message": str(error)}, status.HTTP_200_OK
+        else:
+            return {"message":user_id}, status.HTTP_401_UNAUTHORIZED
+
+    return {"message": "Provide a valid authentication token"}, status.HTTP_403_FORBIDDEN
 
 
 @app.route('/api/auth/reset-password/', methods=['POST'])
@@ -149,7 +169,13 @@ def events_list():
     """List or create events."""
     # Get the access token from the header
     auth_header = request.headers.get('Authorization')
-    access_token = auth_header.split(' ')[1]
+    if auth_header:
+        try:
+            access_token = auth_header.split(' ')[1]
+        except IndexError:
+            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
+    else:
+        access_token = ''
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -187,6 +213,7 @@ def events_list():
                     'id': event.id,
                     'event': event.event,
                     'location': event.location,
+                    'category': event.category,
                     'date': event.date
                 }
                 results.append(obj)
@@ -208,7 +235,13 @@ def events_details(key):
     """Retrieve, update or delete events instances."""
     # get the access token from the authorization header
     auth_header = request.headers.get('Authorization')
-    access_token = auth_header.split(" ")[1]
+    if auth_header:
+        try:
+            access_token = auth_header.split(' ')[1]
+        except IndexError:
+            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
+    else:
+        access_token = ''
 
     if access_token:
         # Get the user id related to this access token
@@ -252,6 +285,7 @@ def events_details(key):
                 'id': get_event.id,
                 'event': get_event.event,
                 'location': get_event.location,
+                'catogory': get_event.category,
                 'date': get_event.date
             }
             return response, status.HTTP_200_OK
@@ -272,7 +306,13 @@ def rsvp_event(key):
 
     # get the access token from the authorization header
     auth_header = request.headers.get('Authorization')
-    access_token = auth_header.split(" ")[1]
+    if auth_header:
+        try:
+            access_token = auth_header.split(' ')[1]
+        except IndexError:
+            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
+    else:
+        access_token = ''
 
     if access_token:
         # Get the user id related to this access token
