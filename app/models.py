@@ -175,11 +175,11 @@ class Events(db.Model):
             id=user).first() is not None
 
     @staticmethod
-    def get_all_events(user_id):
+    def get_all_events(user_id, page):
         """
         Get all the events created by the user
         """
-        return Events.query.filter_by(created_by=user_id)
+        return Events.query.filter_by(created_by=user_id).paginate(page, 3)
 
     @staticmethod
     def get_single_event(key):

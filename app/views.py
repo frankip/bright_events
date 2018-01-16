@@ -206,9 +206,11 @@ def events_list():
 
             # request.method == 'GET'
             # GET all the events created by this user
-            events = Events.get_all_events(user_id)
+            page = request.args.get('page', 1, type=int)
+            # events = Events.get_all_events(user_id, page)
+            events = Events.query.paginate(page, 5, error_out=True)
             results = []
-            for event in events:
+            for event in events.items:
                 obj = {
                     'id': event.id,
                     'event': event.event,
