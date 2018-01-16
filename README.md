@@ -129,5 +129,4 @@ Copy the token and paste it into the header section, creating an Authorization h
 	-H "Content-type: application/json" -X POST \
 	-d '{"email": "test@test.com", "password": "test_password"}' \
 	http://127.0.0.1:5000/api/auth/login/
-
     

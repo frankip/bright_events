@@ -71,6 +71,6 @@ class UserAuthTestcase(unittest.TestCase):
         resp_2 = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp_2.status_code, 202)
 
-
 if __name__ == '__main__':
     unittest.main()
+    

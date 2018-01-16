@@ -161,7 +161,6 @@ def reset_password():
     message = {"message": "you need to log in first to reset password"}
     return message, status.HTTP_401_UNAUTHORIZED
 
-
 @app.route("/api/events/", methods=['GET', 'POST'])
 @swag_from('flasgger/event_get.yml', methods=['GET'])
 @swag_from('flasgger/event_post.yml', methods=['POST'])
@@ -225,7 +224,6 @@ def events_list():
                 'message': message
             }
             return response, status.HTTP_401_UNAUTHORIZED
-
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 @swag_from('flasgger/event_details_get.yml', methods=['GET'])
@@ -346,3 +344,4 @@ def rsvp_event(key):
             }
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
+          

@@ -18,7 +18,7 @@ class Users(db.Model):
     This class handles all the logic and methods
     associated with a user
     """
-
+    
     __tablename__ = 'user_db'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -193,3 +193,4 @@ class Events(db.Model):
 
     def __repr__(self):
         return "<Events: {}>".format(self.event)
+
