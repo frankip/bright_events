@@ -47,15 +47,41 @@ we'll create a virtual enviroment and install the packages there
 
 our virtual enviroment is now ready, we should install all packages for our project
 ensure you have pip installed otherwise 
-
-
-``` sudo apt install pip```
-
 then on your terminal run
 
 ``` pip install -r requirements.txt ```
 
-# run 
+## **postgresSQl Set Up**
+**Intall Postgress**
+
+```sudo apt-get install postgresql postgresql-contrib```
+
+**switch to postgress account**
+
+```sudo -i -u postgres```
+
+**create database**
+    
+    psql -c "CREATE DATABASE flask_api;" -U postgres
+    psql -c "CREATE DATABASE test_db;" -U postgres
+
+**create user and set password**
+
+- ```psql -c "CREATE USER test WITH PASSWORD 'admin';" -U postgres```
+
+**Run migrations**
+
+    python manage.py db init
+    python manage.py db migrate
+    python manage.py db upgrade
+
+**set enviroment variables**
+
+on the terminal run
+
+```export DATABASE_URL='postgresql://postgres:@localhost/flask_api'```
+
+# Run 
 To test our project on your terminal run 
 
 ``` export FLASK_APP=run.py```
@@ -68,7 +94,7 @@ on your browser open up [http://127.0.0.1:5000/api/events/](http://127.0.0.1:500
 
 # Testing using postman or curl 
 
-the endpoints for the api are
+the endpoints for the API are
 
         POST    /api/auth/register/
         POST    /api/auth/login/
@@ -81,6 +107,16 @@ the endpoints for the api are
         POST    /api/events/<int:key>/rsvp
         GET    /api/events/<int:key>/rsvp
 
+use the API documentation to get sample data of payload [Here](https://eventsbright.herokuapp.com/apidocs/#/)
+
+do not forget to include the headers on your postman 
+ - Content-Type: application/json
+ - Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiO
+
+make sure to register and login first to get the authorization token.
+Copy the token and paste it into the header section, creating an Authorization header. Don't forget to put the word Bearer before the token with a space separating them like this:
+
+```Bearer eyJ0eXATQsImV4cCI6ViIjo1fQ.8ju7doEn6Q8VJ6WXAnBHKlyn8KCkMr....```
 ## Test /api/auth/register/
     
     curl -H "Accept: application/json"\-H "Content-type: application/json" -X POST \
@@ -93,12 +129,4 @@ the endpoints for the api are
 	-H "Content-type: application/json" -X POST \
 	-d '{"email": "test@test.com", "password": "test_password"}' \
 	http://127.0.0.1:5000/api/auth/login/
-
-## Test /api/events/
-
-    
-    curl -H "Accept: application/json" \
-	-H "Content-type: application/json" -X POST \
-	-d '{"title": "Fruits"}' \
-	http://127.0.0.1:5000/api/events/
     

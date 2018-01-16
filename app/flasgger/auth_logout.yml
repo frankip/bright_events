@@ -1,0 +1,8 @@
+User Logout endpoints
+    logs out a user
+---
+    tags:
+        - Bright Events API
+    responses:
+        200:
+            description: you have been logged out

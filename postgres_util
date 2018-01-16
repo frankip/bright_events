@@ -1,0 +1,36 @@
+-Root access to postgres (Using default user postgres)
+    ***sudo -u postgres psql postgres***
+
+-Connects to a database under a specific user
+    ***psql -h [HOST] -U [USER] -d [DATABASE]-W***
+
+- Exit Postgres(PSQL) session
+    ***\q ***
+
+- List roles
+    ***SELECT * FROM pg_roles;***
+
+-Select database
+    ***\c [DATABASE]***
+    - Example
+    ***\c bright_events***
+
+-List collections(databases)
+    ***\l ***
+
+-List all schemas in database
+    ***\d ***
+
+-List all tables in database
+    ***\dt ***
+
+-List all views in database
+    ***\dv ***
+
+-Describe relation(table)
+    ***\d+ [TABLENAME]***
+    
+- Create a new database
+    ***CREATE DATABASE [DATABASENAME]***
+    - Example
+    ***CREATE DATABASE app***

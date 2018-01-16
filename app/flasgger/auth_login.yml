@@ -1,0 +1,24 @@
+User login endpoint
+    logs in a user created in the register endpoint
+---
+    tags:
+      - Bright Events API
+    parameters:
+      - in: formData
+        name: email
+        type: string
+        required: true
+        description: email addres you registered with!
+      - in: formData
+        name: password
+        type: string
+        required: true
+        description: The password you registered with!
+    responses:
+      200:
+        description: You have logged in successfully
+        schema:
+          $ref: '#/definitions/Task'
+        examples:
+            email: test@test.com
+            password: password
