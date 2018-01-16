@@ -5,7 +5,8 @@ from __future__ import absolute_import
 
 import unittest
 import json
-from app import app
+from config import app_config
+from app import app, db
 
 
 class UserAuthTestcase(unittest.TestCase):
@@ -14,6 +15,7 @@ class UserAuthTestcase(unittest.TestCase):
     def setUp(self):
         """Set up test variables."""
         self.app = app
+        self.app.config.from_object(app_config['testing'])
         self.client = self.app.test_client
         self.user_data = {
             'first_name': 'new',
@@ -21,6 +23,12 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'test@example.com',
             'password': 'test_password'
             }
+        
+        with self.app.app_context():
+            #create all tables
+            db.session.close()
+            db.drop_all()
+            db.create_all()
 
     def test_user_registration(self):
         """Test user registration works correcty."""
@@ -57,7 +65,7 @@ class UserAuthTestcase(unittest.TestCase):
         res = self.client().post('/api/auth/login/', data=not_a_user)
         self.assertEqual(res.status_code, 401)
 
-    def test_duplicate_usernames(self):
+    def test_duplicate_emails(self):
         """Test that a user cannot be registered twice."""
         self.client().post('/api/auth/register/', data=self.user_data)
         resp_2 = self.client().post('/api/auth/register/', data=self.user_data)
@@ -66,4 +74,3 @@ class UserAuthTestcase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    

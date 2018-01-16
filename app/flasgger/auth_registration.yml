@@ -5,12 +5,12 @@ user registration endpoint
     - Bright Events API
   parameters:
     - in: formData
-      name: first name
+      name: first_name
       type: string
       required: true
       description: Enter a first name!
     - in: formData
-      name: last name
+      name: last_name
       type: string
       required: true
       description: Enter the last name!
