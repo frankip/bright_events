@@ -61,23 +61,24 @@ class TestEventsItem(unittest.TestCase):
         #obtain the access token
         return json.loads(result.data.decode())['access_token']
 
-    def test_create_event(self):
-        """Test API can create an event (POST request)"""
+    def create_event(self):
+        """Helper method to create an event"""
         access_token = self.get_auth()
-        resp = self.client().post(
+        return self.client().post(
             '/api/events/',
             headers=dict(Authorization="Bearer " + access_token),
             data=self.new_event)
+
+    def test_create_event(self):
+        """Test API can create an event (POST request)"""
+        resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         self.assertIn('Barbecue party', str(resp.data))
 
     def test_retrieve_all_events(self):
         """Test API can retrieve all events (GET request)."""
         access_token = self.get_auth()
-        resp = self.client().post(
-            '/api/events/',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.new_event)
+        resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         resp = self.client().get(
             '/api/events/',
@@ -87,10 +88,7 @@ class TestEventsItem(unittest.TestCase):
     def test_retrieve_single_event(self):
         """Test API can retrieve a single event by using it's id.(GET request)."""
         access_token = self.get_auth()
-        resp = self.client().post(
-            '/api/events/',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.new_event)
+        resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         result = self.client().get(
             '/api/events/{}/'.format(1),
@@ -101,38 +99,58 @@ class TestEventsItem(unittest.TestCase):
     def test_update_event(self):
         """Test API can edit an existing event. (PUT request)"""
         access_token = self.get_auth()
-        resp = self.client().post(
-            'api/events/',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.new_event)
+        resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         resp = self.client().put(
-            'api/events/1/',
+            'api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token),
             data=self.update_event)
         self.assertEqual(resp.status_code, 201)
         new_ = self.client().get(
-            'api/events/1/',
+            'api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token),)
         self.assertIn('Burger', str(new_.data))
 
     def test_event_deletion(self):
         """Test API can delete an existing event. (DELETE request)."""
         access_token = self.get_auth()
-        resp = self.client().post(
-            '/api/events/',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.new_event)
+        resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         res = self.client().delete(
-            '/api/events/1/',
+            '/api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token),)
         self.assertEqual(res.status_code, 200)
         # Test to see if it exists, should return a 404
         result = self.client().get(
-            '/api/events/1/',
+            '/api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token),)
         self.assertEqual(result.status_code, 404)
+
+    def test_rsvp_to_an_event(self):
+        """Test API can RSVP to an event"""
+        access_token = self.get_auth()
+        resp = self.create_event()
+        self.assertEqual(resp.status_code, 201)
+        res = self.client().post(
+            'api/events/1/rsvp/',
+            headers=dict(Authorization="Bearer " + access_token),)
+        self.assertEqual(res.status_code, 201)
+        self.assertIn('Thank you for registering to attend this event', str(res.data))
+
+    def test_rsvp_to_an_event_more_than(self):
+        """Test API can not rsvp more than once to an event"""
+        access_token = self.get_auth()
+        resp = self.create_event()
+        self.assertEqual(resp.status_code, 201)
+        res = self.client().post(
+            'api/events/1/rsvp/',
+            headers=dict(Authorization="Bearer " + access_token),)
+        self.assertEqual(res.status_code, 201)
+        new_res = self.client().post(
+            'api/events/{}/rsvp/'.format(1),
+            headers=dict(Authorization="Bearer " + access_token),)
+        self.assertEqual(new_res.status_code, 202)
+        self.assertIn("You have already RSVP", str(new_res.data))
 
     def tearDown(self):
         """teardown all initialized variables."""
