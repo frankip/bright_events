@@ -35,29 +35,17 @@ class TestEventsItem(unittest.TestCase):
             # create all tables
             db.create_all()
 
-    def register_user(self):
-        """This helper method helps register a test user."""
+    def get_auth(self):
+        """Helper method to register and login user and get access token"""
         user_data = {
             'first_name': 'new',
             'last_name': 'user',
             'email': 'frank@test.com',
             'password': 'test_password'
         }
-        return self.client().post('/api/auth/register/', data=user_data)
-
-    def login_user(self):
-        """This helper method helps log in a test user."""
-        user_data = {
-            'email': 'frank@test.com',
-            'password': 'test_password'
-        }
-        return self.client().post('/api/auth/login/', data=user_data)
-
-    def get_auth(self):
-        """Helper method to register and login user and get access token"""
         #register a user then log them in
-        self.register_user()
-        result = self.login_user()
+        self.client().post('/api/auth/register/', data=user_data)
+        result = self.client().post('/api/auth/login/', data=user_data)
         #obtain the access token
         return json.loads(result.data.decode())['access_token']
 
