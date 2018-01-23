@@ -177,6 +177,9 @@ def events_list():
     else:
         access_token = ''
 
+    #page number used in pagination
+    page = request.args.get('page', 1, type=int)
+
     if access_token:
         # Attempt to decode the token and get the User ID
         user_id = Users.decode_token(access_token)
@@ -206,9 +209,8 @@ def events_list():
 
             # request.method == 'GET'
             # GET all the events created by this user
-            page = request.args.get('page', 1, type=int)
-            # events = Events.get_all_events(user_id, page)
-            events = Events.query.paginate(page, 5, error_out=True)
+            events = Events.get_all_events(user_id, page)
+            # events = Events.query.paginate(page, 5, error_out=True)
             results = []
             for event in events.items:
                 obj = {
@@ -227,6 +229,21 @@ def events_list():
                 'message': message
             }
             return response, status.HTTP_401_UNAUTHORIZED
+
+    # request.method == 'GET'
+    # GET all the events in the db
+    events = Events.query.paginate(page, 5, error_out=True)
+    results = []
+    for event in events.items:
+        obj = {
+            'id': event.id,
+            'event': event.event,
+            'location': event.location,
+            'category': event.category,
+            'date': event.date
+        }
+        results.append(obj)
+    return results, status.HTTP_200_OK
 
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])

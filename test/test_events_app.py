@@ -35,7 +35,7 @@ class TestEventsItem(unittest.TestCase):
             # create all tables
             db.create_all()
 
-    def get_auth(self):
+    def get_auth_token(self):
         """Helper method to register and login user and get access token"""
         user_data = {
             'first_name': 'new',
@@ -51,7 +51,7 @@ class TestEventsItem(unittest.TestCase):
 
     def create_event(self):
         """Helper method to create an event"""
-        access_token = self.get_auth()
+        access_token = self.get_auth_token()
         return self.client().post(
             '/api/events/',
             headers=dict(Authorization="Bearer " + access_token),
@@ -65,17 +65,25 @@ class TestEventsItem(unittest.TestCase):
 
     def test_retrieve_all_events(self):
         """Test API can retrieve all events (GET request)."""
-        access_token = self.get_auth()
+        access_token = self.get_auth_token()
         resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         resp = self.client().get(
+            '/api/events/')
+        self.assertIn('Barbecue', str(resp.data))
+
+    def test_retrieve_all_events_by_user(self):
+        """Test if user can retrieve all events he created (GET request)"""
+        access_token = self.get_auth_token()
+        self.create_event()
+        resp = self.client().get(
             '/api/events/',
-            headers=dict(Authorization="Bearer " + access_token),)
+            headers=dict(Authorization="Bearer " + access_token))
         self.assertIn('Barbecue', str(resp.data))
 
     def test_retrieve_single_event(self):
         """Test API can retrieve a single event by using it's id.(GET request)."""
-        access_token = self.get_auth()
+        access_token = self.get_auth_token()
         resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         result = self.client().get(
@@ -86,7 +94,7 @@ class TestEventsItem(unittest.TestCase):
 
     def test_update_event(self):
         """Test API can edit an existing event. (PUT request)"""
-        access_token = self.get_auth()
+        access_token = self.get_auth_token()
         resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         resp = self.client().put(
@@ -101,7 +109,7 @@ class TestEventsItem(unittest.TestCase):
 
     def test_event_deletion(self):
         """Test API can delete an existing event. (DELETE request)."""
-        access_token = self.get_auth()
+        access_token = self.get_auth_token()
         resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         res = self.client().delete(
@@ -115,8 +123,8 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(result.status_code, 404)
 
     def test_rsvp_to_an_event(self):
-        """Test API can RSVP to an event"""
-        access_token = self.get_auth()
+        """Test API can RSVP to an event (POST request)"""
+        access_token = self.get_auth_token()
         resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         res = self.client().post(
@@ -126,8 +134,8 @@ class TestEventsItem(unittest.TestCase):
         self.assertIn('Thank you for registering to attend this event', str(res.data))
 
     def test_rsvp_to_an_event_more_than(self):
-        """Test API can not rsvp more than once to an event"""
-        access_token = self.get_auth()
+        """Test API can not rsvp more than once to an event (POST request)"""
+        access_token = self.get_auth_token()
         resp = self.create_event()
         self.assertEqual(resp.status_code, 201)
         res = self.client().post(
