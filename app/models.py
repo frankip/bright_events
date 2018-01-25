@@ -175,7 +175,7 @@ class Events(db.Model):
             id=user).first() is not None
 
     @staticmethod
-    def get_all_events(user_id, page):
+    def get_all_user_events(user_id, page):
         """
         Get all the events created by the user
         """
