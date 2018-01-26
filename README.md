@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/frankip/bright_events.svg?branch=v2_events)](https://travis-ci.org/frankip/bright_events)
-[![Coverage Status](https://coveralls.io/repos/github/frankip/bright_events/badge.svg?branch=v2_events)](https://coveralls.io/github/frankip/bright_events?branch=v2_events)
+[![Coverage Status](https://coveralls.io/repos/github/frankip/bright_events/badge.svg?branch=development)](https://coveralls.io/github/frankip/bright_events?branch=development)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/maintainability)](https://codeclimate.com/github/frankip/bright_events/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/test_coverage)](https://codeclimate.com/github/frankip/bright_events/test_coverage)
 # Bright_events
@@ -119,5 +119,4 @@ Copy the token and paste it into the header section, creating an Authorization h
 	-H "Content-type: application/json" -X POST \
 	-d '{"email": "test@test.com", "password": "test_password"}' \
 	http://127.0.0.1:5000/api/auth/login/
-
     

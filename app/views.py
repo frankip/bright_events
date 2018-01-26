@@ -7,7 +7,7 @@ from flask_api import status, exceptions
 
 #local imports
 from app import app
-from . models import Users, Events, BlackListToken
+from .models import Users, Events, BlackListToken
 
 def authentication_request():
     """Helper class that gets the access token"""
@@ -83,6 +83,8 @@ def registration():
         # There is an existing user.
         # Return a message to the user telling them that they they already exist
         message = {'message': 'User already exists. Please login.'}
+
+        return message, status.HTTP_202_ACCEPTED
 
         return message, status.HTTP_202_ACCEPTED
 

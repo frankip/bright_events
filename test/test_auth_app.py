@@ -23,6 +23,12 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'test@example.com',
             'password': 'test_password'
             }
+        
+        with self.app.app_context():
+            #create all tables
+            db.session.close()
+            db.drop_all()
+            db.create_all()
 
         # Binds app to current context
         with self.app.app_context():
