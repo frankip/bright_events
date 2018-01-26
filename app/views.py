@@ -86,8 +86,6 @@ def registration():
 
         return message, status.HTTP_202_ACCEPTED
 
-        return message, status.HTTP_202_ACCEPTED
-
 
 @app.route('/api/auth/login/', methods=['POST'])
 def login():
@@ -162,7 +160,6 @@ def reset_password():
         return message, status.HTTP_200_OK
     message = {"message": "you need to log in first to reset password"}
     return message, status.HTTP_401_UNAUTHORIZED
-
 
 @app.route("/api/events/", methods=['GET', 'POST'])
 def events_list():
