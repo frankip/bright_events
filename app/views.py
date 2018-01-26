@@ -4,27 +4,35 @@ this files contains the logic and the routes of the app
 import re
 from flask import request, session
 from flask_api import status, exceptions
-from flasgger import Swagger
-from flasgger.utils import swag_from
 
 #local imports
 from app import app
-from . models import Users, Events, BlackListToken
+from .models import Users, Events, BlackListToken
 
-#flassger api documentation
-Swagger(app)
+def authentication_request():
+    """Helper class that gets the access token"""
+    # Get the access token from the header
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        try:
+            access_token = auth_header.split(' ')[1]
+        except IndexError:
+            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
+    else:
+        access_token = ''
+
+    return access_token
 
 
 @app.route('/api/auth/register/', methods=['GET', 'POST'])
-@swag_from('flasgger/auth_registration.yml', methods=['POST'])
 def registration():
     """
     user registration endpoint registers a user and
     takes in a first name, last name, email, and password
     """
     # Retrieve data from the user side
-    fname = request.data.get('first_name')
-    lname = request.data.get('last_name')
+    first_name = request.data.get('first_name')
+    last_name = request.data.get('last_name')
     email = request.data.get('email')
     password = request.data.get('password')
 
@@ -33,13 +41,14 @@ def registration():
     non-alphabet characters
     """
 
-    if fname is None or fname.strip == "" or not fname.isalpha():
-        message = {"message": "ensure the first name is not empty or filled out correctly"}
+    if first_name is None or first_name.strip == "" or not first_name.isalpha():
+        message = {"message": "ensure the first name is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
 
-    if lname is None or lname.strip == "" or not lname.isalpha():
-        message = {"message": "ensure the last name is not empty or filled out correctly"}
+    if last_name is None or last_name.strip == "" or not last_name.isalpha():
+        message = {
+            "message": "ensure the last name is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
     if email is None or email.strip == "" or not re.search(
@@ -51,7 +60,6 @@ def registration():
         message = {"message": "Password can not be empty"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    # check if the user is already registered
     # Query to see if the user already exists
     user = Users.check_user(email)
 
@@ -59,16 +67,16 @@ def registration():
         # There is no user so we'll try to register them
         try:
             # instantiate a user from the user class
-            user = Users(fname, lname, email, password)
+            user = Users(first_name, last_name, email, password)
             # create new user and save them to the database
             user.save()
 
             message = {'message': "user has been created"}
             return message, status.HTTP_201_CREATED
 
-        except Exception as e:
+        except Exception as error:
             # An error occured, therefore return a string message containing the error
-            message = {'message':str(e)}
+            message = {'message':str(error)}
 
             return message, status.HTTP_401_UNAUTHORIZED
     else:
@@ -78,8 +86,8 @@ def registration():
 
         return message, status.HTTP_202_ACCEPTED
 
+
 @app.route('/api/auth/login/', methods=['POST'])
-@swag_from('flasgger/auth_login.yml', methods=['POST'])
 def login():
     """Endpoint for loggig in users"""
     email = request.data.get('email')
@@ -109,28 +117,18 @@ def login():
         }
         return response, status.HTTP_401_UNAUTHORIZED
 
-    except Exception as e:
+    except Exception as error:
         # Create a response containing an string error message
         response = {
-            'message': str(e)
+            'message': str(error)
         }
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @app.route('/api/auth/logout/', methods=['POST'])
-@swag_from('flasgger/auth_logout.yml', methods=['POST'])
 def logout():
     """User Logout endpoints logs out a user"""
-
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        try:
-            access_token = auth_header.split(' ')[1]
-        except IndexError:
-            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
-
-    else:
-        access_token = ''
+    access_token = authentication_request()
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -140,8 +138,11 @@ def logout():
 
             try:
                 blacklist_token.logout()
+
                 return {"message":"succesfully logged out"}, status.HTTP_200_OK
+
             except Exception as error:
+
                 return {"message": str(error)}, status.HTTP_200_OK
         else:
             return {"message":user_id}, status.HTTP_401_UNAUTHORIZED
@@ -150,7 +151,6 @@ def logout():
 
 
 @app.route('/api/auth/reset-password/', methods=['POST'])
-@swag_from('flasgger/auth_reset_password.yml', methods=['POST'])
 def reset_password():
     """Reset user Password endpoint takes in a password and resets the password"""
     if 'user' in session:
@@ -162,19 +162,11 @@ def reset_password():
     return message, status.HTTP_401_UNAUTHORIZED
 
 @app.route("/api/events/", methods=['GET', 'POST'])
-@swag_from('flasgger/event_get.yml', methods=['GET'])
-@swag_from('flasgger/event_post.yml', methods=['POST'])
 def events_list():
     """List or create events."""
-    # Get the access token from the header
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        try:
-            access_token = auth_header.split(' ')[1]
-        except IndexError:
-            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
-    else:
-        access_token = ''
+    access_token = authentication_request()
+    #page number used in pagination
+    page = request.args.get('page', 1, type=int)
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -192,6 +184,11 @@ def events_list():
                     message = {'message': 'inputs cannot be empty, please fill all inputs'}
                     return message, status.HTTP_400_BAD_REQUEST
 
+                if category is None:
+                    category = "No category"
+                else:
+                    category = category
+
                 inst = Events(event, location, category, date, created_by=user_id)
                 inst.save()
                 response = {
@@ -203,11 +200,12 @@ def events_list():
                 }
                 return response, status.HTTP_201_CREATED
 
-            # request.method == 'GET'
+            # Request.method == 'GET'
             # GET all the events created by this user
-            events = Events.get_all_events(user_id)
+            events = Events.get_all_user_events(user_id, page)
+            # events = Events.query.paginate(page, 5, error_out=True)
             results = []
-            for event in events:
+            for event in events.items:
                 obj = {
                     'id': event.id,
                     'event': event.event,
@@ -225,22 +223,26 @@ def events_list():
             }
             return response, status.HTTP_401_UNAUTHORIZED
 
+    # request.method == 'GET'
+    # GET all the events in the db
+    events = Events.query.paginate(page, 5, error_out=True)
+    results = []
+    for event in events.items:
+        obj = {
+            'id': event.id,
+            'event': event.event,
+            'location': event.location,
+            'category': event.category,
+            'date': event.date
+        }
+        results.append(obj)
+    return results, status.HTTP_200_OK
+
+
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
-@swag_from('flasgger/event_details_get.yml', methods=['GET'])
-@swag_from('flasgger/event_details_put.yml', methods=['PUT'])
-@swag_from('flasgger/event_details_delete.yml', methods=['DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""
-    # get the access token from the authorization header
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        try:
-            access_token = auth_header.split(' ')[1]
-        except IndexError:
-            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
-    else:
-        access_token = ''
-
+    access_token = authentication_request()
     if access_token:
         # Get the user id related to this access token
         user_id = Users.decode_token(access_token)
@@ -255,6 +257,7 @@ def events_details(key):
             if request.method == 'PUT':
                 event = request.data.get('event')
                 location = request.data.get('location')
+                category = request.data.get('category')
                 date = request.data.get('date')
 
                 if event is None or location is None or date is None:
@@ -263,11 +266,13 @@ def events_details(key):
                 get_event.event = event
                 get_event.location = location
                 get_event.date = date
+                get_event.category = category
                 #save the updated event
                 get_event.save()
                 response = {
                     'id': get_event.id,
                     'event': get_event.event,
+                    'category': get_event.category,
                     'location': get_event.location,
                     'date': get_event.date,
                 }
@@ -295,22 +300,22 @@ def events_details(key):
             }
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
+    get_event = Events.get_single_event(key)
+    # request.method == 'GET':
+    response = {
+        'id': get_event.id,
+        'event': get_event.event,
+        'location': get_event.location,
+        'catogory': get_event.category,
+        'date': get_event.date
+    }
+    return response, status.HTTP_200_OK
+
 
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])
-@swag_from('flasgger/event_rsvp_get.yml', methods=['GET'])
-@swag_from('flasgger/event_rsvp_post.yml', methods=['POST'])
 def rsvp_event(key):
     """ Handles the RSVP logic"""
-
-    # get the access token from the authorization header
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        try:
-            access_token = auth_header.split(' ')[1]
-        except IndexError:
-            return {"message": "Token is malformed"}, status.HTTP_401_UNAUTHORIZED
-    else:
-        access_token = ''
+    access_token = authentication_request()
 
     if access_token:
         # Get the user id related to this access token
@@ -344,4 +349,4 @@ def rsvp_event(key):
             }
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
-          
+    return {"message": "You need to sign in to RSVP"}, status.HTTP_403_FORBIDDEN

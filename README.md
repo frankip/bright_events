@@ -1,85 +1,75 @@
 [![Build Status](https://travis-ci.org/frankip/bright_events.svg?branch=v2_events)](https://travis-ci.org/frankip/bright_events)
-[![Coverage Status](https://coveralls.io/repos/github/frankip/bright_events/badge.svg?branch=v2_events)](https://coveralls.io/github/frankip/bright_events?branch=v2_events)
+[![Coverage Status](https://coveralls.io/repos/github/frankip/bright_events/badge.svg?branch=development)](https://coveralls.io/github/frankip/bright_events?branch=development)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/maintainability)](https://codeclimate.com/github/frankip/bright_events/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f1998862ddd21c5fc013/test_coverage)](https://codeclimate.com/github/frankip/bright_events/test_coverage)
 # Bright_events
 Bright events provides a platform for event organizers to create and manage different types of events while making them easily accessible to target markets
 
-## Designs ##
-* The Designs folder contains the static pages showing how the app will look like when finished
-* It also contains the uml-class and wireframes of the respective pages
+## Requirements
+    - python3
+    - postgresSQL Databse Engine
 
-You can also view the [Designs Here](https://confident-colden-f872a4.netlify.com/sign-in.html)
+## Links
 
-### Wireframes 
-![Alt sign-up](https://github.com/frankip/bright_events/blob/master/designs/wireframes/registration%20page.jpeg)
-![Alt sign-in](https://github.com/frankip/bright_events/blob/master/designs/wireframes/login%20page.jpeg)
-![Alt homepage](https://github.com/frankip/bright_events/blob/master/designs/wireframes/index.html.jpeg)
-![Alt event details](https://github.com/frankip/bright_events/blob/master/designs/wireframes/details%20page.jpeg)
+- You can also view the [Designs Here](https://confident-colden-f872a4.netlify.com/sign-in.html)
 
-### uml-class diagram ###
-![Alt Uml-diagram](https://github.com/frankip/bright_events/blob/master/designs/wireframes/uml.jpeg)
+- Link to Hosted [demo](https://eventsbright.herokuapp.com/api/events/)
 
-# Link to Hosted [demo](https://eventsbright.herokuapp.com/api/events/)
-# Access the API Documentation [Here](https://eventsbright.herokuapp.com/apidocs/#/)
-## To run the API  ##
-first clone this repo to your machine 
+- Access the API Documentation [Here](https://eventsbright.herokuapp.com/apidocs/#/)
+# Installation  ##
 
- ``` git clone https://github.com/frankip/bright_events.git ```
+1. Clone the Github repo to your machine 
 
-then change the directory to the project by 
+     ``` git clone https://github.com/frankip/bright_events.git ```
 
-``` cd bright_events ```
+2. change the directory to the project by 
 
-change to the active branch
+    ``` cd bright_events ```
+
+3. change to the active branch
+
     ``` git checkout development ```
 
-to make sure all the packages needed to run the project present in your machine,
-we'll create a virtual enviroment and install the packages there
-
-* to create a virtual enviroment run
-
+4. Create a virtual enviroment
 
     ``` virtualenv -p python3 venv```
-* activating the enviroment
+5. Activate the enviroment
 
     ``` source venv/bin/activate```
 
-our virtual enviroment is now ready, we should install all packages for our project
-ensure you have pip installed otherwise 
-then on your terminal run
+6. Install the project requirements
 
-``` pip install -r requirements.txt ```
+    ``` pip install -r requirements.txt ```
 
 ## **postgresSQl Set Up**
-**Intall Postgress**
+1. Intall Postgress
 
-```sudo apt-get install postgresql postgresql-contrib```
+    - ```sudo apt-get install postgresql postgresql-contrib```
 
-**switch to postgress account**
+2. switch to postgress account
 
-```sudo -i -u postgres```
+    - ```sudo -i -u postgres```
 
-**create database**
+3. create database
     
-    psql -c "CREATE DATABASE flask_api;" -U postgres
-    psql -c "CREATE DATABASE test_db;" -U postgres
+        psql -c "CREATE DATABASE flask_api;" -U postgres
+        psql -c "CREATE DATABASE test_db;" -U postgres
 
-**create user and set password**
+4. create user and set password
 
-- ```psql -c "CREATE USER test WITH PASSWORD 'admin';" -U postgres```
+    - ```psql -c "CREATE USER test WITH PASSWORD 'admin';" -U postgres```
 
-**Run migrations**
+5. Run migrations
 
-    python manage.py db init
-    python manage.py db migrate
-    python manage.py db upgrade
+        python manage.py db init
+        python manage.py db migrate
+        python manage.py db upgrade
 
-**set enviroment variables**
+### set enviroment variables
 
 on the terminal run
 
-```export DATABASE_URL='postgresql://postgres:@localhost/flask_api'```
+- ```export DATABASE_URL='postgresql://postgres:@localhost/flask_api'```
 
 # Run 
 To test our project on your terminal run 

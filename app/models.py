@@ -18,7 +18,6 @@ class Users(db.Model):
     This class handles all the logic and methods
     associated with a user
     """
-    
     __tablename__ = 'user_db'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -124,7 +123,7 @@ class BlackListToken(db.Model):
 
         if resp:
             return True
-        
+
         return False
 
     def __repr__(self):
@@ -175,11 +174,11 @@ class Events(db.Model):
             id=user).first() is not None
 
     @staticmethod
-    def get_all_events(user_id):
+    def get_all_user_events(user_id, page):
         """
         Get all the events created by the user
         """
-        return Events.query.filter_by(created_by=user_id)
+        return Events.query.filter_by(created_by=user_id).paginate(page, 3)
 
     @staticmethod
     def get_single_event(key):
@@ -193,4 +192,3 @@ class Events(db.Model):
 
     def __repr__(self):
         return "<Events: {}>".format(self.event)
-
