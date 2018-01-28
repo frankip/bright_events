@@ -1,12 +1,16 @@
 alembic==0.9.6
 astroid==1.5.3
 certifi==2017.11.5
+<<<<<<< ad476396eba4d54c6e72ba04e65d71d84fea863b
 cffi==1.11.4
+=======
+>>>>>>> update requirements file
 chardet==3.0.4
 click==6.7
 coverage==4.4.2
 coveralls==1.2.0
 docopt==0.6.2
+<<<<<<< ad476396eba4d54c6e72ba04e65d71d84fea863b
 flasgger==0.8.0
 Flask==0.12.2
 Flask-API==1.0
@@ -15,6 +19,11 @@ Flask-Migrate==2.1.1
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
 gunicorn==19.7.1
+=======
+Flask==0.12.2
+Flask-API==1.0
+Flask-HTTPAuth==3.2.3
+>>>>>>> update requirements file
 idna==2.6
 isort==4.2.15
 itsdangerous==0.24
@@ -24,7 +33,10 @@ lazy-object-proxy==1.3.1
 Mako==1.0.7
 MarkupSafe==1.0
 mccabe==0.6.1
+<<<<<<< ad476396eba4d54c6e72ba04e65d71d84fea863b
 mistune==0.8.1
+=======
+>>>>>>> update requirements file
 nose==1.3.7
 passlib==1.7.1
 # pkg-resources==0.0.0
@@ -32,12 +44,17 @@ psycopg2==2.7.3.2
 pycparser==2.18
 PyJWT==1.5.3
 pylint==1.7.4
+<<<<<<< ad476396eba4d54c6e72ba04e65d71d84fea863b
 python-dateutil==2.6.1
 python-editor==1.0.3
 PyYAML==3.12
 requests==2.18.4
 six==1.11.0
 SQLAlchemy==1.1.15
+=======
+requests==2.18.4
+six==1.11.0
+>>>>>>> update requirements file
 urllib3==1.22
 Werkzeug==0.12.2
 wrapt==1.10.11
