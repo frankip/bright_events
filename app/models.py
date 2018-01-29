@@ -74,9 +74,9 @@ class Users(db.Model):
             )
             return jwt_string
 
-        except Exception as e:
+        except Exception as error:
             # return an error in string format if an exception occurs
-            return str(e)
+            return str(error)
 
     def get_full_names(self):
         """Returns the full namesod user"""
