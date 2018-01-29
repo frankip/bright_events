@@ -163,7 +163,6 @@ def reset_password():
 
 @app.route("/api/events/", methods=['GET', 'POST'])
 def events_list():
-    """List or create events."""
     access_token = authentication_request()
     #page number used in pagination
     page = request.args.get('page', 1, type=int)

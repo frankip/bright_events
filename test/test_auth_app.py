@@ -11,7 +11,6 @@ from app import app, db
 
 class UserAuthTestcase(unittest.TestCase):
     """Test case for the authentication functionality."""
-
     def setUp(self):
         """Set up test variables."""
         self.app = app
@@ -77,7 +76,6 @@ class UserAuthTestcase(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(logout.status_code, 200)
         self.assertIn("succesfully logged out", str(logout.data))
-
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():

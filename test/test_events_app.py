@@ -11,7 +11,6 @@ from app import app, db
 
 class TestEventsItem(unittest.TestCase):
     """This class represents the Events test case"""
-
     def setUp(self):
         """Set up test variables."""
         self.app = app
