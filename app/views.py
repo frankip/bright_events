@@ -238,8 +238,6 @@ def events_list():
     return results, status.HTTP_200_OK
 
 
-
-
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""
@@ -316,7 +314,6 @@ def events_details(key):
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])
 def rsvp_event(key):
     """ Handles the RSVP logic"""
-<<<<<<< 6d2879f2b754dc479891f159db2d55c1d71a67fb
     access_token = authentication_request()
 
     if access_token:
@@ -352,17 +349,3 @@ def rsvp_event(key):
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
     return {"message": "You need to sign in to RSVP"}, status.HTTP_403_FORBIDDEN
-=======
-    if key not in Events.events_db:
-        raise exceptions.NotFound()
-
-    events = Events.events_db[key]
-    rsvp_list = events['rsvp']
-    if request.method == "POST":
-        email = request.data.get('email')
-        if email is None:
-            return{"message": "can not rsvp empty inputs"}
-        rsvp_list.append(email)
-        return {'message': rsvp_list}, status.HTTP_201_CREATED
-    return rsvp_list
->>>>>>> update test
