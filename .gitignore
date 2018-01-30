@@ -102,6 +102,3 @@ ENV/
 
 # vs code editor
 .vscode/
-
-# migrations
-migrations/
