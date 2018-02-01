@@ -87,9 +87,16 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         result = self.client().get(
             '/api/events/{}/'.format(1),
-            headers=dict(Authorization="Bearer " + access_token),)
+            headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 200)
         self.assertIn('Barbecue', str(result.data))
+
+    def test_failed_retrieve_single_event(self):
+        """Test retrieving non existing event"""
+        resp = self.create_event()
+        self.assertEqual(resp.status_code, 201)
+        resp = self.client().get('/api/events/{}/'.format(3))
+        self.assertIn('This resource does not exist', str(resp.data))
 
     def test_update_event(self):
         """Test API can edit an existing event. (PUT request)"""
@@ -182,6 +189,16 @@ class TestEventsItem(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),)
         self.assertEqual(new_res.status_code, 202)
         self.assertIn("You have already RSVP", str(new_res.data))
+
+    def test_invalid_access_token(self):
+        """Test ivalid access token"""
+        access_token = "abcd"
+        resp = self.client().post(
+            '/api/events/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.new_event)
+        self.assertEqual(resp.status_code, 401)
+        self.assertIn("Invalid token. Please register or login", str(resp.data))
 
     def tearDown(self):
         """teardown all initialized variables."""

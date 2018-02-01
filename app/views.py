@@ -1,8 +1,7 @@
 """
 this files contains the logic and the routes of the app
 """
-import re
-from flask import request, session
+from flask import request
 from flask_api import status, exceptions
 
 #local imports
@@ -31,8 +30,11 @@ def authentication_request():
 
 @app.route("/api/events/", methods=['GET', 'POST'])
 def events_list():
+    """create and list events"""
+
+    # Get the access token
     access_token = authentication_request()
-    #page number used in pagination
+    #page number variable to used in pagination
     page = request.args.get('page', 1, type=int)
 
     if access_token:
@@ -51,6 +53,7 @@ def events_list():
                     message = {'message': 'inputs cannot be empty, please fill all inputs'}
                     return message, status.HTTP_400_BAD_REQUEST
 
+                # check if category is empty then put a default value
                 if category is None or category.split == "":
                     category = "No Category"
                 else:
@@ -70,7 +73,6 @@ def events_list():
             # Request.method == 'GET'
             # GET all the events created by this user
             events = Events.get_all_user_events(user_id, page)
-            # events = Events.query.paginate(page, 5, error_out=True)
             results = []
             for event in events.items:
                 obj = {
@@ -167,10 +169,14 @@ def events_details(key):
             }
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
-    
+
     # Un registerd usercan still view the event
     # request.method == 'GET':
     get_event = Events.get_single_event(key)
+    if not get_event:
+        #if there is no event Rise Not found exception
+        raise exceptions.NotFound()
+        
     response = {
         'id': get_event.id,
         'event': get_event.event,
@@ -184,8 +190,8 @@ def events_details(key):
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])
 def rsvp_event(key):
     """ Handles the RSVP logic"""
-    access_token = authentication_request()
 
+    access_token = authentication_request()
     if access_token:
         # Get the user id related to this access token
         user_id = Users.decode_token(access_token)

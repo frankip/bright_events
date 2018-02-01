@@ -40,6 +40,16 @@ class UserAuthTestcase(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         self.assertIn("user has been created", str(resp.data))
 
+    def test_invalid_registration(self):
+        """Test registration will fail if not all inputs are present"""
+        missing_name = {
+            'last_name': 'user',
+            'email': 'test@example.com',
+            'password': 'test_password'
+        }
+        resp = self.client().post('/api/auth/register/', data=missing_name)
+        self.assertIn('ensure the first name is not empty', str(resp.data))
+
     def test_user_login(self):
         """Test registered user can login."""
         resp = self.client().post('/api/auth/register/', data=self.user_data)
