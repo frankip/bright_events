@@ -103,8 +103,44 @@ class TestEventsItem(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         new_ = self.client().get(
             'api/events/{}/'.format(1),
-            headers=dict(Authorization="Bearer " + access_token),)
+            headers=dict(Authorization="Bearer " + access_token))
         self.assertIn('Burger', str(new_.data))
+
+    def test_category_return_response(self):
+        """
+        Check if category will not return a null response
+        when nothing is provided
+        """
+        access_token = self.get_auth_token()
+        null_category = {
+            "event": "Barbecue party",
+            "location": "nairobi",
+            "date": "12/12/2017"
+        }
+        empty_category = {
+            "event": "Barbecue party",
+            "location": "nairobi",
+            "category": "",
+            "date": "12/12/2017"
+        }
+        resp = self.client().post(
+            '/api/events/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=null_category)
+        self.assertEqual(resp.status_code, 201)
+        resp = self.client().get(
+            '/api/events/{}/'.format(1),
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertIn('No Category', str(resp.data))
+        resp_2 = self.client().post(
+            '/api/events/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=empty_category)
+        self.assertEqual(resp_2.status_code, 201)
+        resp_2 = self.client().get(
+            '/api/events/{}/'.format(1),
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertIn('No Category', str(resp_2.data))
 
     def test_event_deletion(self):
         """Test API can delete an existing event. (DELETE request)."""
