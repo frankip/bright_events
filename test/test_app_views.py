@@ -198,7 +198,8 @@ class TestEventsItem(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),
             data=self.new_event)
         self.assertEqual(resp.status_code, 401)
-        self.assertIn("Invalid token. Please register or login", str(resp.data))
+        res = json.loads(resp.data.decode())['message']
+        self.assertEquals(res, "Invalid token. Please register or login")
 
     def tearDown(self):
         """teardown all initialized variables."""

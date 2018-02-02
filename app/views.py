@@ -108,6 +108,31 @@ def events_list():
     return results, status.HTTP_200_OK
 
 
+@app.route("/api/events/search/", methods=['GET', 'POST'])
+def filter_or_search_events():
+    """Search or Filter the events list"""
+    page = request.args.get('page', 1, type=int)
+    category = request.args.get('category')
+    location = request.args.get('location')
+    if category:
+        filterd = Events.query.filter_by(category=category)
+    else:
+        filterd = Events.query.filter_by(location=location)
+    # response = [items for items in filterd]
+    response = []
+    
+    for results in filterd:
+        obj = {
+            'id': results.id,
+            'event': results.event,
+            'location': results.location,
+            'category': results.category,
+            'date': results.date
+        }
+        response.append(obj)
+    return response, status.HTTP_200_OK
+    
+
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""
