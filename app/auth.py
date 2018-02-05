@@ -57,8 +57,8 @@ def registration():
             "message": "ensure that email is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if password is None:
-        message = {"message": "Password can not be empty"}
+    if password is None or len(password)<6:
+        message = {"message": "Password can not be empty or less than 6 characters"}
         return message, status.HTTP_400_BAD_REQUEST
 
     # Query to see if the user already exists
