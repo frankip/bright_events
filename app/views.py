@@ -114,13 +114,15 @@ def filter_or_search_events():
     page = request.args.get('page', 1, type=int)
     category = request.args.get('category')
     location = request.args.get('location')
-    if category:
+    if category and location:
+        filterd = Events.query.filter_by(category=category, location=location)
+    elif category:
         filterd = Events.query.filter_by(category=category)
     else:
         filterd = Events.query.filter_by(location=location)
+
     # response = [items for items in filterd]
     response = []
-    
     for results in filterd:
         obj = {
             'id': results.id,
@@ -182,7 +184,7 @@ def events_details(key):
                 'id': get_my_event.id,
                 'event': get_my_event.event,
                 'location': get_my_event.location,
-                'catogory': get_my_event.category,
+                'category': get_my_event.category,
                 'date': get_my_event.date
             }
             return response, status.HTTP_200_OK

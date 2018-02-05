@@ -93,10 +93,9 @@ class TestEventsItem(unittest.TestCase):
 
     def test_failed_retrieve_single_event(self):
         """Test retrieving non existing event"""
-        resp = self.create_event()
-        self.assertEqual(resp.status_code, 201)
         resp = self.client().get('/api/events/{}/'.format(3))
-        self.assertIn('This resource does not exist', str(resp.data))
+        result = json.loads(resp.data.decode())['message']
+        self.assertEquals(result, 'This resource does not exist.')
 
     def test_update_event(self):
         """Test API can edit an existing event. (PUT request)"""
@@ -111,7 +110,8 @@ class TestEventsItem(unittest.TestCase):
         new_ = self.client().get(
             'api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token))
-        self.assertIn('Burger', str(new_.data))
+        result = json.loads(new_.data.decode())['event']
+        self.assertEquals(result, 'Burger Fest')
 
     def test_category_return_response(self):
         """
@@ -138,7 +138,8 @@ class TestEventsItem(unittest.TestCase):
         resp = self.client().get(
             '/api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token))
-        self.assertIn('No Category', str(resp.data))
+        result = json.loads(resp.data.decode())['category']
+        self.assertEquals(result, 'No Category')
         resp_2 = self.client().post(
             '/api/events/',
             headers=dict(Authorization="Bearer " + access_token),
@@ -147,7 +148,8 @@ class TestEventsItem(unittest.TestCase):
         resp_2 = self.client().get(
             '/api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token))
-        self.assertIn('No Category', str(resp_2.data))
+        result = json.loads(resp_2.data.decode())['category']
+        self.assertEquals(result, 'No Category')
 
     def test_event_deletion(self):
         """Test API can delete an existing event. (DELETE request)."""
@@ -189,6 +191,28 @@ class TestEventsItem(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),)
         self.assertEqual(new_res.status_code, 202)
         self.assertIn("You have already RSVP", str(new_res.data))
+
+    def test_filter_events(self):
+        """Test a user can filter events by location and category"""
+        self.create_event()
+
+        # Filter for category in events
+        filt = self.client().post(
+            '/api/events/search/?category=Food')
+        result = json.loads(filt.data.decode())[0]
+        self.assertEquals(result['category'], "Food")
+
+        # Filter for location in events
+        filt_2 = self.client().post('/api/events/search/?location=nairobi')
+        result = json.loads(filt_2.data.decode())[0]
+        self.assertEquals(result['location'], 'nairobi')
+
+        # Filter for both location and category
+        filt_3 = self.client().post(
+            'api/events/search/?category=Food&location=nairobi')
+        result = json.loads(filt_3.data.decode())[0]
+        self.assertEquals(result['location'], 'nairobi')
+        self.assertEquals(result['category'], 'Food')
 
     def test_invalid_access_token(self):
         """Test ivalid access token"""
