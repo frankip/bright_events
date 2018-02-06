@@ -197,9 +197,9 @@ class TestEventsItem(unittest.TestCase):
         self.create_event()
 
         # Filter for category in events
-        filt = self.client().post(
+        filt_1 = self.client().post(
             '/api/events/search/?category=Food')
-        result = json.loads(filt.data.decode())[0]
+        result = json.loads(filt_1.data.decode())[0]
         self.assertEquals(result['category'], "Food")
 
         # Filter for location in events
@@ -214,8 +214,19 @@ class TestEventsItem(unittest.TestCase):
         self.assertEquals(result['location'], 'nairobi')
         self.assertEquals(result['category'], 'Food')
 
+        # filter for non recognized value
+        filt_4 = self.client().post(
+            'api/events/search/?catey=yadada')
+        result = json.loads(filt_4.data.decode())['message']
+        self.assertEquals(result, 'That query can not be found')
+
+        # filter for non existing query
+        filt_5 = self.client().post('/api/events/search/?location=kiambu')
+        result = json.loads(filt_5.data.decode())['message']
+        self.assertEquals(result, 'There are no events matching that query')
+
     def test_invalid_access_token(self):
-        """Test ivalid access token"""
+        """Test invalid access token"""
         access_token = "abcd"
         resp = self.client().post(
             '/api/events/',

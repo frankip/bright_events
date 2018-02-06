@@ -118,10 +118,11 @@ def filter_or_search_events():
         filterd = Events.query.filter_by(category=category, location=location)
     elif category:
         filterd = Events.query.filter_by(category=category)
-    else:
+    elif location:
         filterd = Events.query.filter_by(location=location)
+    else:
+        return {'message': 'That query can not be found'}
 
-    # response = [items for items in filterd]
     response = []
     for results in filterd:
         obj = {
@@ -132,7 +133,13 @@ def filter_or_search_events():
             'date': results.date
         }
         response.append(obj)
+
+    # If there are no values in response return message
+    if not response:
+        return {'message': 'There are no events matching that query'}, status.HTTP_200_OK
+
     return response, status.HTTP_200_OK
+    
     
 
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
