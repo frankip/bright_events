@@ -12,8 +12,14 @@ from .auth import (
     logout,
     reset_password
 )
-from .models import Events, Users
-
+from .models import (
+    Events,
+    Users
+)
+from .error import (
+    not_found_error,
+    internal_error
+)
 def authentication_request():
     """Helper class that gets the access token"""
     # Get the access token from the header
