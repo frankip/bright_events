@@ -22,7 +22,7 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'test@example.com',
             'password': 'test_password'
             }
-        
+
         with self.app.app_context():
             #create all tables
             db.session.close()
@@ -38,7 +38,18 @@ class UserAuthTestcase(unittest.TestCase):
         """Test user registration works correcty."""
         resp = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp.status_code, 201)
-        self.assertIn("user has been created", str(resp.data))
+        result = json.loads(resp.data.decode())['message']
+        self.assertIn(result, 'user has been created')
+
+    def test_invalid_registration(self):
+        """Test registration will fail if not all inputs are present"""
+        missing_name = {
+            'last_name': 'user',
+            'email': 'test@example.com',
+            'password': 'test_password'
+        }
+        resp = self.client().post('/api/auth/register/', data=missing_name)
+        self.assertIn('ensure the first name is not empty', str(resp.data))
 
     def test_user_login(self):
         """Test registered user can login."""
@@ -58,12 +69,39 @@ class UserAuthTestcase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertIn("Invalid Email or Password, Please Try again", str(res.data))
 
+    def test_invalid_password(self):
+        """test to ensure password requires more than six characters"""
+        user1= {
+            'first_name': 'new',
+            'last_name': 'user',
+            'email': 'test@example.com',
+            'password': '1234'
+        }
+        user2 = {
+            'first_name': 'new',
+            'last_name': 'user',
+            'email': 'test@example.com',
+            'password': '123456'
+        }
+        # Test for user with password less than six characters
+        resp = self.client().post('/api/auth/register/', data=user1)
+        self.assertEqual(resp.status_code, 400)
+        result = json.loads(resp.data.decode())['message']
+        self.assertIn(result, "Password can not be empty or less than 6 characters")
+
+        # Test for user with more than six characters
+        resp2 = self.client().post('/api/auth/register/', data=user2)
+        self.assertEqual(resp2.status_code, 201)
+        result = json.loads(resp2.data.decode())['message']
+        self.assertIn(result, 'user has been created')
+
     def test_duplicate_emails(self):
         """Test that a user cannot be registered twice."""
         self.client().post('/api/auth/register/', data=self.user_data)
         resp_2 = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp_2.status_code, 202)
-        self.assertIn("User already exists. Please login", str(resp_2.data))
+        result = json.loads(resp_2.data.decode())['message']
+        self.assertIn(result, 'User already exists. Please login.')
 
     def test_user_logout(self):
         """Test that a user can logout"""
@@ -75,7 +113,9 @@ class UserAuthTestcase(unittest.TestCase):
             '/api/auth/logout/',
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(logout.status_code, 200)
-        self.assertIn("succesfully logged out", str(logout.data))
+        result = json.loads(logout.data.decode())['message']
+        self.assertIn(result, "succesfully logged out")
+
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():
