@@ -116,6 +116,23 @@ class UserAuthTestcase(unittest.TestCase):
         result = json.loads(logout.data.decode())['message']
         self.assertIn(result, "succesfully logged out")
 
+
+    def test_reset_password(self):
+
+        self.client().post('/api/auth/register/', data=self.user_data)
+        result = self.client().post('/api/auth/login/', data=self.user_data)
+        #obtain the access token
+        access_token = json.loads(result.data.decode())['access_token']
+        reset = self.client.put(
+            '/api/auth/reset-password/', data={'password': 'test_password123'})
+        self.assertEqual(reset.status_code, 200)
+        result = json.loads(reset.data.decode())['message']
+        self.assertIn(result, "you have succesfuly reset your password")
+        new_login = self.client().post('/api/auth/login/', data=self.user_data)
+        self.assertEqual(new_login.status_code, 200)
+
+        
+
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():
