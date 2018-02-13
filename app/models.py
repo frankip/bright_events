@@ -36,7 +36,15 @@ class Users(db.Model):
         self.fname = fname
         self.lname = lname
         self.email = email
-        self.password = pwd_context.encrypt(password)
+        self.password = password
+
+    @staticmethod
+    def hash_password(password):
+        """
+        This method hashes the password which will be 
+        stored in the db as password
+        """
+        return pwd_context.encrypt(password)
 
     def save(self):
         """Creates a new user and saves to the database"""
@@ -98,6 +106,9 @@ class Users(db.Model):
         except jwt.InvalidTokenError:
             #The token is invalid, return an error string
             return "Invalid token. Please register or login"
+
+    def __repr__(self):
+        return "<User: {}>".format(self.get_full_names())
 
 class BlackListToken(db.Model):
     __tablename__ = 'blacklist_token'

@@ -123,13 +123,19 @@ class UserAuthTestcase(unittest.TestCase):
         result = self.client().post('/api/auth/login/', data=self.user_data)
         #obtain the access token
         access_token = json.loads(result.data.decode())['access_token']
-        reset = self.client.put(
-            '/api/auth/reset-password/', data={'password': 'test_password123'})
+        reset = self.client().put(
+            '/api/auth/reset-password/', 
+            headers=dict(Authorization="Bearer " + access_token),
+            data={'password': 'test_password123'})
         self.assertEqual(reset.status_code, 200)
         result = json.loads(reset.data.decode())['message']
         self.assertIn(result, "you have succesfuly reset your password")
-        new_login = self.client().post('/api/auth/login/', data=self.user_data)
+        new_login = self.client().post(
+            '/api/auth/login/', 
+            data={'email': 'test@example.com', 'password': 'test_password123'})
         self.assertEqual(new_login.status_code, 200)
+        result = json.loads(new_login.data.decode())['message']
+        self.assertIn(result, "You logged in successfully.")
 
         
 

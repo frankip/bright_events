@@ -147,7 +147,6 @@ def filter_or_search_events():
     return response, status.HTTP_200_OK
     
     
-
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""

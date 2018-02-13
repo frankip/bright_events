@@ -6,7 +6,7 @@ from flask import request, session
 from flask_api import status
 
 #local imports
-from app import app
+from app import app, db
 from .models import Users, BlackListToken
 
 
@@ -67,6 +67,8 @@ def registration():
     if not user:
         # There is no user so we'll try to register them
         try:
+            # hash password
+            password = Users.hash_password(password)
             # instantiate a user from the user class
             user = Users(first_name, last_name, email, password)
             # create new user and save them to the database
@@ -113,9 +115,7 @@ def login():
             return response, status.HTTP_200_OK
 
         # else user does not exist. Return error message
-        response = {
-            'message': "Invalid Email or Password, Please Try again"
-        }
+        response = {'message': 'Invalid Email or Password, Please Try again'}
         return response, status.HTTP_401_UNAUTHORIZED
 
     except Exception as error:
@@ -151,13 +151,31 @@ def logout():
     return {"message": "Provide a valid authentication token"}, status.HTTP_403_FORBIDDEN
 
 
-@app.route('/api/auth/reset-password/', methods=['POST'])
+@app.route('/api/auth/reset-password/', methods=['PUT'])
 def reset_password():
     """Reset user Password endpoint takes in a password and resets the password"""
-    if 'user' in session:
-        password = request.data.get('password')
-        Users.user_db['user'] = password
-        message = {"message": "you have succesfuly reset your password"}
-        return message, status.HTTP_200_OK
-    message = {"message": "you need to log in first to reset password"}
-    return message, status.HTTP_401_UNAUTHORIZED
+    password = request.data.get('password')
+    access_token = authentication_request()
+
+    if access_token:
+        # Attempt to decode the token and get the User ID
+        user_id = Users.decode_token(access_token)
+        if not isinstance(user_id, str):
+            user = Users.query.filter_by(id=user_id).first()
+            try:
+                if not user:
+                    raise exeptions.NotFound()
+                
+                user.password = Users.hash_password(password)
+                user.save()
+                # db.session.commit()
+                return {"message": "you have succesfuly reset your password"}, status.HTTP_200_OK
+            
+            except Exception as error:
+                
+                return {"message": str(error)}, status.HTTP_200_OK
+                
+        else:
+            return {"message": user_id}, status.HTTP_401_UNAUTHORIZED
+
+    return {"message": "Provide a valid authentication token"}, status.HTTP_403_FORBIDDEN
