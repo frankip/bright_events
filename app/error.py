@@ -17,3 +17,10 @@ def internal_error(error):
     }
     return response, status.HTTP_500_INTERNAL_SERVER_ERROR
 
+
+@app.errorhandler(405)
+def internal_error(error):
+    response = {
+        'message': 'That operation is not allowed'
+    }
+    return response, status.HTTP_405_METHOD_NOT_ALLOWED

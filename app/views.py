@@ -120,12 +120,21 @@ def filter_or_search_events():
     page = request.args.get('page', 1, type=int)
     category = request.args.get('category')
     location = request.args.get('location')
+    search  = request.args.get('q')
     if category and location:
-        filterd = Events.query.filter_by(category=category, location=location)
+        filterd = Events.query.filter_by(
+            category=category, location=location).paginate(page, 5).items
+
     elif category:
-        filterd = Events.query.filter_by(category=category)
+        filterd = Events.query.filter_by(category=category).paginate(page, 5).items
+
     elif location:
-        filterd = Events.query.filter_by(location=location)
+        filterd = Events.query.filter_by(location=location).paginate(page, 5).items
+
+    elif search:
+        # for items in ('event', 'category','location'):
+        filterd = Events.query.filter(getattr(Events, 'event').ilike('%{}%'.format(search)))
+
     else:
         return {'message': 'That query can not be found'}
 
@@ -264,3 +273,11 @@ def rsvp_event(key):
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
     return {"message": "You need to sign in to RSVP"}, status.HTTP_403_FORBIDDEN
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    response = {
+        'message': 'Un expected error has occured'
+    }
+    return response, status.HTTP_500_INTERNAL_SERVER_ERROR
