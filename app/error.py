@@ -19,7 +19,7 @@ def internal_error(error):
 
 
 @app.errorhandler(405)
-def internal_error(error):
+def method_not_allowed(error):
     response = {
         'message': 'That operation is not allowed'
     }

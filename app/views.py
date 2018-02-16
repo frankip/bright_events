@@ -18,8 +18,10 @@ from .models import (
 )
 from .error import (
     not_found_error,
-    internal_error
+    internal_error,
+    method_not_allowed
 )
+
 def authentication_request():
     """Helper class that gets the access token"""
     # Get the access token from the header
@@ -42,6 +44,7 @@ def events_list():
     access_token = authentication_request()
     #page number variable to used in pagination
     page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', type=int)
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -54,13 +57,23 @@ def events_list():
                 location = request.data.get('location')
                 category = request.data.get('category')
                 date = request.data.get('date')
-
-                if event is None or location is None or date is None:
-                    message = {'message': 'inputs cannot be empty, please fill all inputs'}
+        
+                if event is None or event.strip() == "":
+                    message = {'message': 'event input field cannot be missing or empty'}
                     return message, status.HTTP_400_BAD_REQUEST
+                
+                if location is None or location.strip() == "":
+                    message = {'message': 'location input field cannot be missing or empty'}
+                    return message, status.HTTP_400_BAD_REQUEST
+                
+                if date is None or date.strip() == "":
+                    message = {'message': 'date input field cannot be missing or empty'}
+                    return message, status.HTTP_400_BAD_REQUEST
+                
+                
 
                 # check if category is empty then put a default value
-                if category is None or category.split == "":
+                if category is None or category.strip() == "":
                     category = "No Category"
                 else:
                     category = category
@@ -100,7 +113,7 @@ def events_list():
 
     # request.method == 'GET'
     # GET all the events in the db
-    all_events = Events.query.paginate(page, 5, error_out=True)
+    all_events = Events.query.paginate(page, limit, error_out=True)
     results = []
     for event in all_events.items:
         obj = {
@@ -118,18 +131,22 @@ def events_list():
 def filter_or_search_events():
     """Search or Filter the events list"""
     page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', type=int)
+
     category = request.args.get('category')
     location = request.args.get('location')
     search  = request.args.get('q')
     if category and location:
         filterd = Events.query.filter_by(
-            category=category, location=location).paginate(page, 5).items
+            category=category, location=location).paginate(page, limit).items
 
     elif category:
-        filterd = Events.query.filter_by(category=category).paginate(page, 5).items
+        filterd = Events.query.filter_by(
+            category=category).paginate(page, limit).items
 
     elif location:
-        filterd = Events.query.filter_by(location=location).paginate(page, 5).items
+        filterd = Events.query.filter_by(
+            location=location).paginate(page, limit).items
 
     elif search:
         # for items in ('event', 'category','location'):
@@ -273,11 +290,3 @@ def rsvp_event(key):
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
     return {"message": "You need to sign in to RSVP"}, status.HTTP_403_FORBIDDEN
-
-
-@app.errorhandler(500)
-def internal_error(error):
-    response = {
-        'message': 'Un expected error has occured'
-    }
-    return response, status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -41,12 +41,12 @@ def registration():
     non-alphabet characters
     """
 
-    if first_name is None or first_name.strip == "" or not first_name.isalpha():
+    if first_name is None or first_name.strip() == "" or not first_name.isalpha():
         message = {
             "message": "ensure the first name is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if last_name is None or last_name.strip == "" or not last_name.isalpha():
+    if last_name is None or last_name.strip() == "" or not last_name.isalpha():
         message = {
             "message": "ensure the last name is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
@@ -57,7 +57,7 @@ def registration():
             "message": "ensure that email is not empty or filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if password is None or len(password)<6:
+    if password is None or len(password) < 6 or password.strip() == "":
         message = {"message": "Password can not be empty or less than 6 characters"}
         return message, status.HTTP_400_BAD_REQUEST
 
@@ -97,7 +97,7 @@ def login():
     password = request.data.get('password')
 
     if email is None or password is None:
-        message = {'message': 'inputs cannot be empty'}
+        message = {'message': 'ensure that email field or password field is present'}
         return message, status.HTTP_400_BAD_REQUEST
 
     try:
