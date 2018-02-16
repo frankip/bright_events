@@ -70,8 +70,6 @@ def events_list():
                     message = {'message': 'date input field cannot be missing or empty'}
                     return message, status.HTTP_400_BAD_REQUEST
                 
-                
-
                 # check if category is empty then put a default value
                 if category is None or category.strip() == "":
                     category = "No Category"
@@ -149,8 +147,9 @@ def filter_or_search_events():
             location=location).paginate(page, limit).items
 
     elif search:
-        # for items in ('event', 'category','location'):
-        filterd = Events.query.filter(getattr(Events, 'event').ilike('%{}%'.format(search)))
+        # for items in ('event', 'category', 'location'):
+        filterd = Events.query.filter(getattr(Events, 'events').ilike('%{}%'.format(search)))
+
 
     else:
         return {'message': 'That query can not be found'}

@@ -8,6 +8,7 @@ from flask_api import status
 #local imports
 from app import app, db
 from .models import Users, BlackListToken
+from .password import is_strong_password
 
 
 def authentication_request():
@@ -43,22 +44,23 @@ def registration():
 
     if first_name is None or first_name.strip() == "" or not first_name.isalpha():
         message = {
-            "message": "ensure the first name is not empty and it consist of alphabets only"}
+            "message": "ensure the first name field is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
     if last_name is None or last_name.strip() == "" or not last_name.isalpha():
         message = {
-            "message": "ensure the last name is not empty and it consist of alphabets only"}
+            "message": "ensure the last name field is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
     if email is None or email.strip == "" or not re.search(
             r'[\w.-]+@[\w.-]+.\w+', email):
         message = {
-            "message": "ensure that email is not empty or filled out correctly"}
+            "message": "ensure that email field is not empty or is filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if password is None or len(password) < 6 or password.strip() == "":
-        message = {"message": "Password can not be empty or less than 6 characters"}
+    if password is None or not is_strong_password(password):
+        message = {
+            "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
         return message, status.HTTP_400_BAD_REQUEST
 
     # Query to see if the user already exists
