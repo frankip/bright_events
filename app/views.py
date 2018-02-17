@@ -44,7 +44,7 @@ def events_list():
     access_token = authentication_request()
     #page number variable to used in pagination
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', type=int)
+    limit = request.args.get('limit', 5, type=int)
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -129,33 +129,33 @@ def events_list():
 def filter_or_search_events():
     """Search or Filter the events list"""
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', type=int)
+    limit = request.args.get('limit', 5, type=int)
 
     category = request.args.get('category')
     location = request.args.get('location')
     search  = request.args.get('q')
     if category and location:
         filterd = Events.query.filter_by(
-            category=category, location=location).paginate(page, limit).items
+            category=category, location=location).paginate(page, limit)
 
     elif category:
         filterd = Events.query.filter_by(
-            category=category).paginate(page, limit).items
+            category=category).paginate(page, limit)
 
     elif location:
         filterd = Events.query.filter_by(
-            location=location).paginate(page, limit).items
+            location=location).paginate(page, limit)
 
     elif search:
-        # for items in ('event', 'category', 'location'):
-        filterd = Events.query.filter(getattr(Events, 'events').ilike('%{}%'.format(search)))
+        filterd = Events.query.filter(
+            getattr(Events, 'event').ilike('%{}%'.format(search))).paginate(page, limit)
 
 
     else:
         return {'message': 'That query can not be found'}
 
     response = []
-    for results in filterd:
+    for results in filterd.items:
         obj = {
             'id': results.id,
             'event': results.event,
