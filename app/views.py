@@ -22,6 +22,35 @@ from .error import (
     method_not_allowed
 )
 
+def get_user_input():
+    event = request.data.get('event')
+    location = request.data.get('location')
+    category = request.data.get('category')
+    date = request.data.get('date')
+
+    if event is None or event.strip() == "":
+        message = {
+            'message': 'event input field cannot be missing or empty'}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    if location is None or location.strip() == "":
+        message = {
+            'message': 'location input field cannot be missing or empty'}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    if date is None or date.strip() == "":
+        message = {
+            'message': 'date input field cannot be missing or empty'}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    # check if category is empty then put a default value
+    if category is None or category.strip() == "":
+        category = "No Category"
+    else:
+        category = category
+
+    return event, location, category, date
+
 def authentication_request():
     """Helper class that gets the access token"""
     # Get the access token from the header
@@ -35,6 +64,42 @@ def authentication_request():
         access_token = ''
 
     return access_token
+
+def get_response(event_query):
+    """Heleper method for looping over Get methods"""
+    response = []
+    for event in event_query.items:
+        obj = {
+            'id': event.id,
+            'event': event.event,
+            'location': event.location,
+            'category': event.category,
+            'date': event.date
+        }
+        response.append(obj)
+    return response
+
+def get_single_event_response(event):
+    """Return serializable single event"""
+    response = {
+        'id': event.id,
+        'event': event.event,
+        'location': event.location,
+        'category': event.category,
+        'date': event.date
+    }
+    return response
+
+def retrieve_single_event(key):
+    """ Helper method to help retrieve single event from the DB"""
+    #  Retrieve Events by id using get_single_event method from Events class
+    single_event = Events.get_single_event(key)
+
+    #if there is no event Raise Not found exception
+    if not single_event:
+        raise exceptions.NotFound()
+
+    return single_event
 
 @app.route("/api/events/", methods=['GET', 'POST'])
 def events_list():
@@ -53,53 +118,22 @@ def events_list():
             # Go ahead and handle the request, the user is authenticated
             if request.method == 'POST':
 
-                event = request.data.get('event')
-                location = request.data.get('location')
-                category = request.data.get('category')
-                date = request.data.get('date')
-        
-                if event is None or event.strip() == "":
-                    message = {'message': 'event input field cannot be missing or empty'}
-                    return message, status.HTTP_400_BAD_REQUEST
-                
-                if location is None or location.strip() == "":
-                    message = {'message': 'location input field cannot be missing or empty'}
-                    return message, status.HTTP_400_BAD_REQUEST
-                
-                if date is None or date.strip() == "":
-                    message = {'message': 'date input field cannot be missing or empty'}
-                    return message, status.HTTP_400_BAD_REQUEST
-                
-                # check if category is empty then put a default value
-                if category is None or category.strip() == "":
-                    category = "No Category"
-                else:
-                    category = category
+                # get user input from the helper class get user input at the top
+                event, location, category, date = get_user_input()
 
                 inst = Events(event, location, category, date, created_by=user_id)
                 inst.save()
-                response = {
-                    'id': inst.id,
-                    'event': inst.event,
-                    'location': inst.location,
-                    'category': inst.category,
-                    'date': inst.date
-                }
+
+                # Get response from the helper method get_single_event()
+                response = get_single_event_response(inst)
                 return response, status.HTTP_201_CREATED
 
             # Request.method == 'GET'
             # GET all the events created by this user
             events = Events.get_all_user_events(user_id, page)
-            results = []
-            for event in events.items:
-                obj = {
-                    'id': event.id,
-                    'event': event.event,
-                    'location': event.location,
-                    'category': event.category,
-                    'date': event.date
-                }
-                results.append(obj)
+
+            # Get response object from helper method get_response()
+            results = get_response(events)
             return results, status.HTTP_200_OK
         else:
             # user is not legit, so the payload is an error message
@@ -112,16 +146,9 @@ def events_list():
     # request.method == 'GET'
     # GET all the events in the db
     all_events = Events.query.paginate(page, limit, error_out=True)
-    results = []
-    for event in all_events.items:
-        obj = {
-            'id': event.id,
-            'event': event.event,
-            'location': event.location,
-            'category': event.category,
-            'date': event.date
-        }
-        results.append(obj)
+
+    # Get response object from helper method get_response()
+    results = get_response(all_events)
     return results, status.HTTP_200_OK
 
 
@@ -154,17 +181,8 @@ def filter_or_search_events():
     else:
         return {'message': 'That query can not be found'}
 
-    response = []
-    for results in filterd.items:
-        obj = {
-            'id': results.id,
-            'event': results.event,
-            'location': results.location,
-            'category': results.category,
-            'date': results.date
-        }
-        response.append(obj)
-
+    response = get_response(filterd)
+    
     # If there are no values in response return message
     if not response:
         return {'message': 'There are no events matching that query'}, status.HTTP_200_OK
@@ -181,20 +199,14 @@ def events_details(key):
         user_id = Users.decode_token(access_token)
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
-            # Retrieve Events by id
-            get_my_event = Events.get_single_event(key)
-            if not get_my_event:
-                #if there is no event Rise Not found exception
-                raise exceptions.NotFound()
 
+            # Retrieve event by id
+            get_my_event = retrieve_single_event(key)
+        
             if request.method == 'PUT':
-                event = request.data.get('event')
-                location = request.data.get('location')
-                category = request.data.get('category')
-                date = request.data.get('date')
 
-                if event is None or location is None or date is None:
-                    return {'message': 'inputs cannot be empty, please fill all inputs'}
+                # get user input from the helper class get user input at the top
+                event, location, category, date = get_user_input()
 
                 get_my_event.event = event
                 get_my_event.location = location
@@ -202,13 +214,9 @@ def events_details(key):
                 get_my_event.category = category
                 #save the updated event
                 get_my_event.save()
-                response = {
-                    'id': get_my_event.id,
-                    'event': get_my_event.event,
-                    'category': get_my_event.category,
-                    'location': get_my_event.location,
-                    'date': get_my_event.date,
-                }
+
+                # get response from the helper method get_single_response
+                response = get_single_event_response(get_my_event)
                 return response, status.HTTP_201_CREATED
 
             elif request.method == "DELETE":
@@ -217,13 +225,8 @@ def events_details(key):
                 return message, status.HTTP_204_NO_CONTENT
 
             # request.method == 'GET':
-            response = {
-                'id': get_my_event.id,
-                'event': get_my_event.event,
-                'location': get_my_event.location,
-                'category': get_my_event.category,
-                'date': get_my_event.date
-            }
+            # Get response object from helper method get_single_event_response
+            response = get_single_event_response(get_my_event)
             return response, status.HTTP_200_OK
         else:
             # user is not legit, so the payload is an error message
@@ -234,20 +237,14 @@ def events_details(key):
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
 
-    # Un registerd usercan still view the event
+    # Unregisterd users can still view the event
     # request.method == 'GET':
-    get_event = Events.get_single_event(key)
-    if not get_event:
-        #if there is no event Rise Not found exception
-        raise exceptions.NotFound()
-        
-    response = {
-        'id': get_event.id,
-        'event': get_event.event,
-        'location': get_event.location,
-        'catogory': get_event.category,
-        'date': get_event.date
-    }
+
+    # Retrieve Events by id
+    get_event = retrieve_single_event(key)
+
+    # Get response object from helper method get_single_event_response
+    response = get_single_event_response(get_event)
     return response, status.HTTP_200_OK
 
 
@@ -262,12 +259,9 @@ def rsvp_event(key):
 
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
-            #Retrieve Events by id
-            get_event = Events.get_single_event(key)
 
-            if not get_event:
-                #if there is no event Rise Not found exception
-                raise exceptions.NotFound()
+            #Retrieve Events by id
+            get_event = retrieve_single_event(key)
 
             if request.method == "POST":
                 if not get_event.already_rsvpd(user_id):
@@ -279,7 +273,7 @@ def rsvp_event(key):
 
             # request method GET
             rsvp_list = get_event.rsvp.all()
-            return [users.get_full_names() for users in rsvp_list], status.HTTP_200_OK
+            return [{"name": users.get_full_names(), "email": users.email} for users in rsvp_list], status.HTTP_200_OK
         else:
             # user is not legit, so the payload is an error message
             message = user_id

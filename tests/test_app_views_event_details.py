@@ -63,6 +63,8 @@ class TestEventsDetails(unittest.TestCase, Helper):
             headers=dict(Authorization="Bearer " + access_token),
             data=self.update_event)
         self.assertEqual(resp.status_code, 201)
+        result = json.loads(resp.data.decode())['event']
+        self.assertEquals(result, 'Burger Fest')
         new_ = self.client().get(
             'api/events/{}/'.format(1),
             headers=dict(Authorization="Bearer " + access_token))
