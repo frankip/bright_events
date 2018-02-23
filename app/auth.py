@@ -3,7 +3,7 @@ this files contains the logic and the routes of the app
 """
 import re
 from flask import request, session
-from flask_api import status
+from flask_api import status, exceptions
 
 #local imports
 from app import app, db
@@ -24,6 +24,14 @@ def authentication_request():
         access_token = ''
 
     return access_token
+
+def check_password_validation(password):
+    if password is None or not is_strong_password(password):
+        message = {
+            "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    return password
 
 @app.route('/api/auth/register/', methods=['GET', 'POST'])
 def registration():
@@ -58,11 +66,8 @@ def registration():
             "message": "ensure that email field is not empty or is filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if password is None or not is_strong_password(password):
-        message = {
-            "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
-        return message, status.HTTP_400_BAD_REQUEST
-
+    valid_password = check_password_validation(password)
+    
     # Query to see if the user already exists
     user = Users.check_user(email)
 
@@ -70,7 +75,7 @@ def registration():
         # There is no user so we'll try to register them
         try:
             # hash password
-            password = Users.hash_password(password)
+            password = Users.hash_password(valid_password)
             # instantiate a user from the user class
             user = Users(first_name, last_name, email, password)
             # create new user and save them to the database
@@ -166,9 +171,10 @@ def reset_password():
             user = Users.query.filter_by(id=user_id).first()
             try:
                 if not user:
-                    raise exeptions.NotFound()
-                
-                user.password = Users.hash_password(password)
+                    raise exceptions.NotFound()
+
+                valid_password = check_password_validation(password)
+                user.password = Users.hash_password(valid_password)
                 user.save()
                 # db.session.commit()
                 return {"message": "you have succesfuly reset your password"}, status.HTTP_200_OK
