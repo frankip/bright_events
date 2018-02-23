@@ -22,13 +22,6 @@ class UserAuthTestcase(unittest.TestCase):
             'email': 'test@example.com',
             'password': 'Test_password1'
             }
-
-        with self.app.app_context():
-            #create all tables
-            db.session.close()
-            db.drop_all()
-            db.create_all()
-
         # Binds app to current context
         with self.app.app_context():
             #create all tables
@@ -71,13 +64,13 @@ class UserAuthTestcase(unittest.TestCase):
         reset = self.client().put(
             '/api/auth/reset-password/', 
             headers=dict(Authorization="Bearer " + access_token),
-            data={'password': 'test_password123'})
+            data={'password': 'Test_password123'})
         self.assertEqual(reset.status_code, 200)
         result = json.loads(reset.data.decode())['message']
         self.assertIn(result, "you have succesfuly reset your password")
         new_login = self.client().post(
             '/api/auth/login/', 
-            data={'email': 'test@example.com', 'password': 'test_password123'})
+            data={'email': 'test@example.com', 'password': 'Test_password123'})
         self.assertEqual(new_login.status_code, 200)
         result = json.loads(new_login.data.decode())['message']
         self.assertIn(result, "You logged in successfully.")

@@ -28,23 +28,23 @@ def get_user_input():
     category = request.data.get('category')
     date = request.data.get('date')
 
-    if event is None or event.strip() == "":
+    if event is None or not event:
         message = {
             'message': 'event input field cannot be missing or empty'}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if location is None or location.strip() == "":
+    if location is None or not event:
         message = {
             'message': 'location input field cannot be missing or empty'}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if date is None or date.strip() == "":
+    if date is None or not event:
         message = {
             'message': 'date input field cannot be missing or empty'}
         return message, status.HTTP_400_BAD_REQUEST
 
     # check if category is empty then put a default value
-    if category is None or category.strip() == "":
+    if category is None or not category:
         category = "No Category"
     else:
         category = category

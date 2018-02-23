@@ -50,17 +50,17 @@ def registration():
     non-alphabet characters
     """
 
-    if first_name is None or first_name.strip() == "" or not first_name.isalpha():
+    if first_name is None or not first_name or not first_name.isalpha():
         message = {
             "message": "ensure the first name field is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if last_name is None or last_name.strip() == "" or not last_name.isalpha():
+    if last_name is None or not last_name or not last_name.isalpha():
         message = {
             "message": "ensure the last name field is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if email is None or email.strip == "" or not re.search(
+    if email is None or not email or not re.search(
             r'[\w.-]+@[\w.-]+.\w+', email):
         message = {
             "message": "ensure that email field is not empty or is filled out correctly"}
