@@ -3,11 +3,12 @@ this files contains the logic and the routes of the app
 """
 import re
 from flask import request, session
-from flask_api import status
+from flask_api import status, exceptions
 
 #local imports
-from app import app
+from app import app, db
 from .models import Users, BlackListToken
+from .password import is_strong_password
 
 
 def authentication_request():
@@ -23,6 +24,14 @@ def authentication_request():
         access_token = ''
 
     return access_token
+
+def check_password_validation(password):
+    if password is None or not is_strong_password(password):
+        message = {
+            "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    return password
 
 @app.route('/api/auth/register/', methods=['GET', 'POST'])
 def registration():
@@ -41,32 +50,32 @@ def registration():
     non-alphabet characters
     """
 
-    if first_name is None or first_name.strip == "" or not first_name.isalpha():
+    if first_name is None or not first_name or not first_name.isalpha():
         message = {
-            "message": "ensure the first name is not empty and it consist of alphabets only"}
+            "message": "ensure the first name field is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if last_name is None or last_name.strip == "" or not last_name.isalpha():
+    if last_name is None or not last_name or not last_name.isalpha():
         message = {
-            "message": "ensure the last name is not empty and it consist of alphabets only"}
+            "message": "ensure the last name field is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if email is None or email.strip == "" or not re.search(
+    if email is None or not email or not re.search(
             r'[\w.-]+@[\w.-]+.\w+', email):
         message = {
-            "message": "ensure that email is not empty or filled out correctly"}
+            "message": "ensure that email field is not empty or is filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    if password is None or len(password)<6:
-        message = {"message": "Password can not be empty or less than 6 characters"}
-        return message, status.HTTP_400_BAD_REQUEST
-
+    valid_password = check_password_validation(password)
+    
     # Query to see if the user already exists
     user = Users.check_user(email)
 
     if not user:
         # There is no user so we'll try to register them
         try:
+            # hash password
+            password = Users.hash_password(valid_password)
             # instantiate a user from the user class
             user = Users(first_name, last_name, email, password)
             # create new user and save them to the database
@@ -95,7 +104,7 @@ def login():
     password = request.data.get('password')
 
     if email is None or password is None:
-        message = {'message': 'inputs cannot be empty'}
+        message = {'message': 'ensure that email field or password field is present'}
         return message, status.HTTP_400_BAD_REQUEST
 
     try:
@@ -113,9 +122,7 @@ def login():
             return response, status.HTTP_200_OK
 
         # else user does not exist. Return error message
-        response = {
-            'message': "Invalid Email or Password, Please Try again"
-        }
+        response = {'message': 'Invalid Email or Password, Please Try again'}
         return response, status.HTTP_401_UNAUTHORIZED
 
     except Exception as error:
@@ -151,13 +158,32 @@ def logout():
     return {"message": "Provide a valid authentication token"}, status.HTTP_403_FORBIDDEN
 
 
-@app.route('/api/auth/reset-password/', methods=['POST'])
+@app.route('/api/auth/reset-password/', methods=['PUT'])
 def reset_password():
     """Reset user Password endpoint takes in a password and resets the password"""
-    if 'user' in session:
-        password = request.data.get('password')
-        Users.user_db['user'] = password
-        message = {"message": "you have succesfuly reset your password"}
-        return message, status.HTTP_200_OK
-    message = {"message": "you need to log in first to reset password"}
-    return message, status.HTTP_401_UNAUTHORIZED
+    password = request.data.get('password')
+    access_token = authentication_request()
+
+    if access_token:
+        # Attempt to decode the token and get the User ID
+        user_id = Users.decode_token(access_token)
+        if not isinstance(user_id, str):
+            user = Users.query.filter_by(id=user_id).first()
+            try:
+                if not user:
+                    raise exceptions.NotFound()
+
+                valid_password = check_password_validation(password)
+                user.password = Users.hash_password(valid_password)
+                user.save()
+                # db.session.commit()
+                return {"message": "you have succesfuly reset your password"}, status.HTTP_200_OK
+            
+            except Exception as error:
+                
+                return {"message": str(error)}, status.HTTP_200_OK
+                
+        else:
+            return {"message": user_id}, status.HTTP_401_UNAUTHORIZED
+
+    return {"message": "Provide a valid authentication token"}, status.HTTP_403_FORBIDDEN
