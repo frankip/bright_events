@@ -1,13 +1,55 @@
 """
 this files contains the logic and the routes of the app
 """
-import re
-from flask import request, session
+from flask import request
 from flask_api import status, exceptions
 
 #local imports
 from app import app
-from .models import Users, Events, BlackListToken
+from .auth import (
+    registration,
+    login,
+    logout,
+    reset_password
+)
+from .models import (
+    Events,
+    Users
+)
+from .error import (
+    not_found_error,
+    internal_error,
+    method_not_allowed
+)
+
+def get_user_input():
+    event = request.data.get('event')
+    location = request.data.get('location')
+    category = request.data.get('category')
+    date = request.data.get('date')
+
+    if event is None or not event:
+        message = {
+            'message': 'event input field cannot be missing or empty'}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    if location is None or not event:
+        message = {
+            'message': 'location input field cannot be missing or empty'}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    if date is None or not event:
+        message = {
+            'message': 'date input field cannot be missing or empty'}
+        return message, status.HTTP_400_BAD_REQUEST
+
+    # check if category is empty then put a default value
+    if category is None or not category:
+        category = "No Category"
+    else:
+        category = category
+
+    return event, location, category, date
 
 def authentication_request():
     """Helper class that gets the access token"""
@@ -23,149 +65,51 @@ def authentication_request():
 
     return access_token
 
-
-@app.route('/api/auth/register/', methods=['GET', 'POST'])
-def registration():
-    """
-    user registration endpoint registers a user and
-    takes in a first name, last name, email, and password
-    """
-    # Retrieve data from the user side
-    first_name = request.data.get('first_name')
-    last_name = request.data.get('last_name')
-    email = request.data.get('email')
-    password = request.data.get('password')
-
-    """
-    validating the data from user isalpha ensures there are no
-    non-alphabet characters
-    """
-
-    if first_name is None or first_name.strip == "" or not first_name.isalpha():
-        message = {"message": "ensure the first name is not empty and it consist of alphabets only"}
-        return message, status.HTTP_400_BAD_REQUEST
-
-
-    if last_name is None or last_name.strip == "" or not last_name.isalpha():
-        message = {
-            "message": "ensure the last name is not empty and it consist of alphabets only"}
-        return message, status.HTTP_400_BAD_REQUEST
-
-    if email is None or email.strip == "" or not re.search(
-            r'[\w.-]+@[\w.-]+.\w+', email):
-        message = {"message": "ensure that email is not empty or filled out correctly"}
-        return message, status.HTTP_400_BAD_REQUEST
-
-    if password is None:
-        message = {"message": "Password can not be empty"}
-        return message, status.HTTP_400_BAD_REQUEST
-
-    # Query to see if the user already exists
-    user = Users.check_user(email)
-
-    if not user:
-        # There is no user so we'll try to register them
-        try:
-            # instantiate a user from the user class
-            user = Users(first_name, last_name, email, password)
-            # create new user and save them to the database
-            user.save()
-
-            message = {'message': "user has been created"}
-            return message, status.HTTP_201_CREATED
-
-        except Exception as error:
-            # An error occured, therefore return a string message containing the error
-            message = {'message':str(error)}
-
-            return message, status.HTTP_401_UNAUTHORIZED
-    else:
-        # There is an existing user.
-        # Return a message to the user telling them that they they already exist
-        message = {'message': 'User already exists. Please login.'}
-
-        return message, status.HTTP_202_ACCEPTED
-
-
-@app.route('/api/auth/login/', methods=['POST'])
-def login():
-    """Endpoint for loggig in users"""
-    email = request.data.get('email')
-    password = request.data.get('password')
-
-    if email is None or password is None:
-        message = {'message': 'inputs cannot be empty'}
-        return message, status.HTTP_400_BAD_REQUEST
-
-    try:
-        # Get the user object using their email (unique to every user)
-        user = Users.check_user(email)
-        # Try to authenticate the found user using their password
-        if user and user.verify_password(password):
-            # Generate the access token. This will be used as the authorization header
-            access_token = user.generate_token(user.id)
-            if access_token:
-                response = {
-                    'message': 'You logged in successfully.',
-                    'access_token': access_token.decode()
-                }
-            return response, status.HTTP_200_OK
-
-        # else user does not exist. Return error message
-        response = {
-            'message': "Invalid Email or Password, Please Try again"
+def get_response(event_query):
+    """Heleper method for looping over Get methods"""
+    response = []
+    for event in event_query.items:
+        obj = {
+            'id': event.id,
+            'event': event.event,
+            'location': event.location,
+            'category': event.category,
+            'date': event.date
         }
-        return response, status.HTTP_401_UNAUTHORIZED
+        response.append(obj)
+    return response
 
-    except Exception as error:
-        # Create a response containing an string error message
-        response = {
-            'message': str(error)
-        }
-        return response, status.HTTP_500_INTERNAL_SERVER_ERROR
+def get_single_event_response(event):
+    """Return serializable single event"""
+    response = {
+        'id': event.id,
+        'event': event.event,
+        'location': event.location,
+        'category': event.category,
+        'date': event.date
+    }
+    return response
 
+def retrieve_single_event(key):
+    """ Helper method to help retrieve single event from the DB"""
+    #  Retrieve Events by id using get_single_event method from Events class
+    single_event = Events.get_single_event(key)
 
-@app.route('/api/auth/logout/', methods=['POST'])
-def logout():
-    """User Logout endpoints logs out a user"""
-    access_token = authentication_request()
+    #if there is no event Raise Not found exception
+    if not single_event:
+        raise exceptions.NotFound()
 
-    if access_token:
-        # Attempt to decode the token and get the User ID
-        user_id = Users.decode_token(access_token)
-        if not isinstance(user_id, str):
-            blacklist_token = BlackListToken(token=access_token)
-
-            try:
-                blacklist_token.logout()
-
-                return {"message":"succesfully logged out"}, status.HTTP_200_OK
-
-            except Exception as error:
-
-                return {"message": str(error)}, status.HTTP_200_OK
-        else:
-            return {"message":user_id}, status.HTTP_401_UNAUTHORIZED
-
-    return {"message": "Provide a valid authentication token"}, status.HTTP_403_FORBIDDEN
-
-
-@app.route('/api/auth/reset-password/', methods=['POST'])
-def reset_password():
-    """Reset user Password endpoint takes in a password and resets the password"""
-    if 'user' in session:
-        password = request.data.get('password')
-        Users.user_db['user'] = password
-        message = {"message": "you have succesfuly reset your password"}
-        return message, status.HTTP_200_OK
-    message = {"message": "you need to log in first to reset password"}
-    return message, status.HTTP_401_UNAUTHORIZED
+    return single_event
 
 @app.route("/api/events/", methods=['GET', 'POST'])
 def events_list():
+    """create and list events"""
+
+    # Get the access token
     access_token = authentication_request()
-    #page number used in pagination
+    #page number variable to used in pagination
     page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 5, type=int)
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -174,45 +118,22 @@ def events_list():
             # Go ahead and handle the request, the user is authenticated
             if request.method == 'POST':
 
-                event = request.data.get('event')
-                location = request.data.get('location')
-                category = request.data.get('category')
-                date = request.data.get('date')
-
-                if event is None or location is None or date is None:
-                    message = {'message': 'inputs cannot be empty, please fill all inputs'}
-                    return message, status.HTTP_400_BAD_REQUEST
-
-                if category is None:
-                    category = "No category"
-                else:
-                    category = category
+                # get user input from the helper class get user input at the top
+                event, location, category, date = get_user_input()
 
                 inst = Events(event, location, category, date, created_by=user_id)
                 inst.save()
-                response = {
-                    'id': inst.id,
-                    'event': inst.event,
-                    'location': inst.location,
-                    'category': inst.category,
-                    'date': inst.date
-                }
+
+                # Get response from the helper method get_single_event()
+                response = get_single_event_response(inst)
                 return response, status.HTTP_201_CREATED
 
             # Request.method == 'GET'
             # GET all the events created by this user
             events = Events.get_all_user_events(user_id, page)
-            # events = Events.query.paginate(page, 5, error_out=True)
-            results = []
-            for event in events.items:
-                obj = {
-                    'id': event.id,
-                    'event': event.event,
-                    'location': event.location,
-                    'category': event.category,
-                    'date': event.date
-                }
-                results.append(obj)
+
+            # Get response object from helper method get_response()
+            results = get_response(events)
             return results, status.HTTP_200_OK
         else:
             # user is not legit, so the payload is an error message
@@ -224,20 +145,51 @@ def events_list():
 
     # request.method == 'GET'
     # GET all the events in the db
-    events = Events.query.paginate(page, 5, error_out=True)
-    results = []
-    for event in events.items:
-        obj = {
-            'id': event.id,
-            'event': event.event,
-            'location': event.location,
-            'category': event.category,
-            'date': event.date
-        }
-        results.append(obj)
+    all_events = Events.query.paginate(page, limit, error_out=True)
+
+    # Get response object from helper method get_response()
+    results = get_response(all_events)
     return results, status.HTTP_200_OK
 
 
+@app.route("/api/events/search/", methods=['GET', 'POST'])
+def filter_or_search_events():
+    """Search or Filter the events list"""
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 5, type=int)
+
+    category = request.args.get('category')
+    location = request.args.get('location')
+    search  = request.args.get('q')
+    if category and location:
+        filterd = Events.query.filter_by(
+            category=category, location=location).paginate(page, limit)
+
+    elif category:
+        filterd = Events.query.filter_by(
+            category=category).paginate(page, limit)
+
+    elif location:
+        filterd = Events.query.filter_by(
+            location=location).paginate(page, limit)
+
+    elif search:
+        filterd = Events.query.filter(
+            getattr(Events, 'event').ilike('%{}%'.format(search))).paginate(page, limit)
+
+
+    else:
+        return {'message': 'That query can not be found'}
+
+    response = get_response(filterd)
+    
+    # If there are no values in response return message
+    if not response:
+        return {'message': 'There are no events matching that query'}, status.HTTP_200_OK
+
+    return response, status.HTTP_200_OK
+    
+    
 @app.route("/api/events/<int:key>/", methods=['GET', 'PUT', 'DELETE'])
 def events_details(key):
     """Retrieve, update or delete events instances."""
@@ -247,49 +199,34 @@ def events_details(key):
         user_id = Users.decode_token(access_token)
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
-            # Retrieve Events by id
-            get_event = Events.get_single_event(key)
-            if not get_event:
-                #if there is no event Rise Not found exception
-                raise exceptions.NotFound()
 
+            # Retrieve event by id
+            get_my_event = retrieve_single_event(key)
+        
             if request.method == 'PUT':
-                event = request.data.get('event')
-                location = request.data.get('location')
-                category = request.data.get('category')
-                date = request.data.get('date')
 
-                if event is None or location is None or date is None:
-                    return {'message': 'inputs cannot be empty, please fill all inputs'}
+                # get user input from the helper class get user input at the top
+                event, location, category, date = get_user_input()
 
-                get_event.event = event
-                get_event.location = location
-                get_event.date = date
-                get_event.category = category
+                get_my_event.event = event
+                get_my_event.location = location
+                get_my_event.date = date
+                get_my_event.category = category
                 #save the updated event
-                get_event.save()
-                response = {
-                    'id': get_event.id,
-                    'event': get_event.event,
-                    'category': get_event.category,
-                    'location': get_event.location,
-                    'date': get_event.date,
-                }
+                get_my_event.save()
+
+                # get response from the helper method get_single_response
+                response = get_single_event_response(get_my_event)
                 return response, status.HTTP_201_CREATED
 
             elif request.method == "DELETE":
-                get_event.delete()
+                get_my_event.delete()
                 message = {"message": "Deleted succesfully"}
                 return message, status.HTTP_204_NO_CONTENT
 
             # request.method == 'GET':
-            response = {
-                'id': get_event.id,
-                'event': get_event.event,
-                'location': get_event.location,
-                'catogory': get_event.category,
-                'date': get_event.date
-            }
+            # Get response object from helper method get_single_event_response
+            response = get_single_event_response(get_my_event)
             return response, status.HTTP_200_OK
         else:
             # user is not legit, so the payload is an error message
@@ -299,35 +236,32 @@ def events_details(key):
             }
             # return an error response, telling the user he is Unauthorized
             return response, status.HTTP_401_UNAUTHORIZED
-    get_event = Events.get_single_event(key)
+
+    # Unregisterd users can still view the event
     # request.method == 'GET':
-    response = {
-        'id': get_event.id,
-        'event': get_event.event,
-        'location': get_event.location,
-        'catogory': get_event.category,
-        'date': get_event.date
-    }
+
+    # Retrieve Events by id
+    get_event = retrieve_single_event(key)
+
+    # Get response object from helper method get_single_event_response
+    response = get_single_event_response(get_event)
     return response, status.HTTP_200_OK
 
 
 @app.route("/api/events/<int:key>/rsvp/", methods=['GET', 'POST'])
 def rsvp_event(key):
     """ Handles the RSVP logic"""
-    access_token = authentication_request()
 
+    access_token = authentication_request()
     if access_token:
         # Get the user id related to this access token
         user_id = Users.decode_token(access_token)
 
         if not isinstance(user_id, str):
             # If the id is not a string(error), we have a user id
-            #Retrieve Events by id
-            get_event = Events.get_single_event(key)
 
-            if not get_event:
-                #if there is no event Rise Not found exception
-                raise exceptions.NotFound()
+            #Retrieve Events by id
+            get_event = retrieve_single_event(key)
 
             if request.method == "POST":
                 if not get_event.already_rsvpd(user_id):
@@ -339,7 +273,7 @@ def rsvp_event(key):
 
             # request method GET
             rsvp_list = get_event.rsvp.all()
-            return [users.get_full_names() for users in rsvp_list], status.HTTP_200_OK
+            return [{"name": users.get_full_names(), "email": users.email} for users in rsvp_list], status.HTTP_200_OK
         else:
             # user is not legit, so the payload is an error message
             message = user_id

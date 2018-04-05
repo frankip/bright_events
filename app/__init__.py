@@ -16,6 +16,7 @@ app = FlaskAPI(__name__, instance_relative_config=True)
 app.config.from_object(app_config['development'])
 app.secret_key = os.getenv('SECRET')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.url_map.strict_slashes = False
 app.config['SWAGGER'] = {
     'title': 'Bright Events'
 }

@@ -20,15 +20,8 @@ class UserAuthTestcase(unittest.TestCase):
             'first_name': 'new',
             'last_name': 'user',
             'email': 'test@example.com',
-            'password': 'test_password'
+            'password': 'Test_password1'
             }
-        
-        with self.app.app_context():
-            #create all tables
-            db.session.close()
-            db.drop_all()
-            db.create_all()
-
         # Binds app to current context
         with self.app.app_context():
             #create all tables
@@ -38,7 +31,8 @@ class UserAuthTestcase(unittest.TestCase):
         """Test user registration works correcty."""
         resp = self.client().post('/api/auth/register/', data=self.user_data)
         self.assertEqual(resp.status_code, 201)
-        self.assertIn("user has been created", str(resp.data))
+        result = json.loads(resp.data.decode())['message']
+        self.assertIn(result, 'user has been created')
 
     def test_user_login(self):
         """Test registered user can login."""
@@ -47,23 +41,6 @@ class UserAuthTestcase(unittest.TestCase):
         login_resp = self.client().post('/api/auth/login/', data=self.user_data)
         self.assertEqual(login_resp.status_code, 200)
         self.assertIn("You logged in successfully", str(login_resp.data))
-
-    def test_failed_login(self):
-        """Test non registered users cannot login."""
-        not_a_user = {
-            'email': 'not_a_user@example.com',
-            'password': 'nope'
-        }
-        res = self.client().post('/api/auth/login/', data=not_a_user)
-        self.assertEqual(res.status_code, 401)
-        self.assertIn("Invalid Email or Password, Please Try again", str(res.data))
-
-    def test_duplicate_emails(self):
-        """Test that a user cannot be registered twice."""
-        self.client().post('/api/auth/register/', data=self.user_data)
-        resp_2 = self.client().post('/api/auth/register/', data=self.user_data)
-        self.assertEqual(resp_2.status_code, 202)
-        self.assertIn("User already exists. Please login", str(resp_2.data))
 
     def test_user_logout(self):
         """Test that a user can logout"""
@@ -75,7 +52,29 @@ class UserAuthTestcase(unittest.TestCase):
             '/api/auth/logout/',
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(logout.status_code, 200)
-        self.assertIn("succesfully logged out", str(logout.data))
+        result = json.loads(logout.data.decode())['message']
+        self.assertIn(result, "succesfully logged out")
+
+    def test_reset_password(self):
+
+        self.client().post('/api/auth/register/', data=self.user_data)
+        result = self.client().post('/api/auth/login/', data=self.user_data)
+        #obtain the access token
+        access_token = json.loads(result.data.decode())['access_token']
+        reset = self.client().put(
+            '/api/auth/reset-password/', 
+            headers=dict(Authorization="Bearer " + access_token),
+            data={'password': 'Test_password123'})
+        self.assertEqual(reset.status_code, 200)
+        result = json.loads(reset.data.decode())['message']
+        self.assertIn(result, "you have succesfuly reset your password")
+        new_login = self.client().post(
+            '/api/auth/login/', 
+            data={'email': 'test@example.com', 'password': 'Test_password123'})
+        self.assertEqual(new_login.status_code, 200)
+        result = json.loads(new_login.data.decode())['message']
+        self.assertIn(result, "You logged in successfully.")
+
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():
