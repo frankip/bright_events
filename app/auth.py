@@ -25,13 +25,13 @@ def authentication_request():
 
     return access_token
 
-def check_password_validation(password):
-    if password is None or not is_strong_password(password):
-        message = {
-            "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
-        return message, status.HTTP_400_BAD_REQUEST
+# def check_password_validation(password):
+#     if password is None or not password:
+#         message = {
+#             "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
+#         return message, status.HTTP_400_BAD_REQUEST
 
-    return password
+#     return password
 
 @app.route('/api/auth/register/', methods=['GET', 'POST'])
 def registration():
@@ -59,6 +59,11 @@ def registration():
         message = {
             "message": "ensure the last name field is not empty and it consist of alphabets only"}
         return message, status.HTTP_400_BAD_REQUEST
+    
+    if password is None or password.strip() == "" or len(password) < 6:
+        message = {
+            "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
+        return message, status.HTTP_400_BAD_REQUEST
 
     if email is None or not email or not re.search(
             r'[\w.-]+@[\w.-]+.\w+', email):
@@ -66,7 +71,7 @@ def registration():
             "message": "ensure that email field is not empty or is filled out correctly"}
         return message, status.HTTP_400_BAD_REQUEST
 
-    valid_password = check_password_validation(password)
+    # valid_password = check_password_validation(password)
     
     # Query to see if the user already exists
     user = Users.check_user(email)
@@ -75,7 +80,7 @@ def registration():
         # There is no user so we'll try to register them
         try:
             # hash password
-            password = Users.hash_password(valid_password)
+            password = Users.hash_password(password)
             # instantiate a user from the user class
             user = Users(first_name, last_name, email, password)
             # create new user and save them to the database
