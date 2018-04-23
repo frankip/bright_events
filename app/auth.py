@@ -25,13 +25,13 @@ def authentication_request():
 
     return access_token
 
-# def check_password_validation(password):
-#     if password is None or not password:
-#         message = {
-#             "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
-#         return message, status.HTTP_400_BAD_REQUEST
+def check_password_validation(password):
+    if password is None or not password:
+        message = {
+            "message": "Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters"}
+        return message, status.HTTP_400_BAD_REQUEST
 
-#     return password
+    return password
 
 @app.route('/api/auth/register/', methods=['GET', 'POST'])
 def registration():

@@ -67,7 +67,7 @@ class FailedUserAuthTestCase(unittest.TestCase):
         }
         # Test for user with password less than six characters
         resp = self.client().post('/api/auth/register/', data=user1)
-        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(resp.status_code, 400)
         result = json.loads(resp.data.decode())['message']
         # self.assertIn(
         #     result, 'Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters')
@@ -77,6 +77,22 @@ class FailedUserAuthTestCase(unittest.TestCase):
         self.assertEqual(resp2.status_code, 201)
         result = json.loads(resp2.data.decode())['message']
         self.assertIn(result, 'user has been created')
+
+    def test_missing_password_field(self):
+        """Test that registration will fail when the password field is missing"""
+        user1 = {
+            'first_name': 'new',
+            'last_name': 'user',
+            'email': 'test@example.com',
+        }
+        resp = self.client().post('/api/auth/register/', data=user1)
+        self.assertEqual(resp.status_code, 400)
+        result = json.loads(resp.data.decode())['message']
+        self.assertIn(
+            result, 'Password field can not be empty and it should contain an Uppercase, a lowercase, a digit and shoud be more than six characters')
+
+
+
 
     def test_duplicate_emails(self):
         """Test that a user cannot be registered twice."""
