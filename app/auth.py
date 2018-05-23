@@ -115,6 +115,7 @@ def login():
     try:
         # Get the user object using their email (unique to every user)
         user = Users.check_user(email)
+        profile = user.get_full_names()
         # Try to authenticate the found user using their password
         if user and user.verify_password(password):
             # Generate the access token. This will be used as the authorization header
@@ -122,7 +123,8 @@ def login():
             if access_token:
                 response = {
                     'message': 'You logged in successfully.',
-                    'access_token': access_token.decode()
+                    'access_token': access_token.decode(),
+                    'user': profile
                 }
             return response, status.HTTP_200_OK
 

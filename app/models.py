@@ -70,7 +70,7 @@ class Users(db.Model):
         try:
             #set up payload with an expiration time
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=5),
+                'exp': datetime.utcnow() + timedelta(minutes=50),
                 'iat': datetime.utcnow(),
                 'sub': user_id
             }
@@ -189,7 +189,7 @@ class Events(db.Model):
         """
         Get all the events created by the user
         """
-        return Events.query.filter_by(created_by=user_id).paginate(page, 3)
+        return Events.query.filter_by(created_by=user_id).paginate(page, 10)
 
     @staticmethod
     def get_single_event(key):
