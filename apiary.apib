@@ -1,0 +1,271 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+# Bright events
+
+a platform for event organizers to create and manage different types of events 
+while making them easily accessible to target markets
+
+## Registration [/api/auth/register/]
+### user sign up [POST]
++ Request (application/json)
+
+            {
+                "first_name":"Jillian",
+                "last_name":"Dixon",
+                "email": "Jillian@gmail.com",
+                "password": "Test123"
+            }
+
++ Response 201 (application/json)
+
+    + Headers
+
+            Location: /api/auth/register/
+
+    + Body
+
+            {
+             "message": "user has been created"
+            }
+            
++ Response 202 (application/json)
+
+    + Headers
+
+            Location: /api/auth/register/
+
+    + Body
+
+            {
+             'message': 'User already exists. Please login.'
+            }
+
+## Login [/api/auth/login/]
+### user sign in [POST]
++ Request (application/json)
+
+            {
+                "email": "Jillian@gmail.com",
+                "password": "Test123"
+            }
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Location: /api/auth/login/
+
+    + Body
+
+            {
+                "message": "You logged in successfully.",
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjQzLCJpYXQiOjE1MTg5MDUzODksImV4cCI6MTUxODkwNTY4OX0.FtkD7F8BCTfujuGHDX9nT7IAFTncguLfBkvKBEtutgw"
+            }
+            
++ Response 401 (application/json)
+
+    + Headers
+
+            Location: /api/auth/login/
+    + Body
+
+            {
+             'message': 'Invalid Email or Password, Please Try again'
+            }
+
+## Logout [/api/auth/logout/]
+### user sign out [POST]
++ Response 200 (application/json)
+
+    + Headers
+
+             Authorization: Bearer eyJhbGciOiJIUzI1NiIsI
+
+    + Body
+
+            {
+                "message": "succesfully logged out"
+            }
+            
++ Response 403 (application/json)
+
+    + Body
+
+            {
+                "message": "Provide a valid authentication token"
+            }
+
+## Reset Password [/api/auth/reset-password/]
+### user reset password [PUT]
++ Request (application/json)
+
+            {
+            "password": "Test123"
+            }
+
+    + Headers
+
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsI
+         
++ Response 201 (application/json)
+
+    + Body
+
+            {
+             "message": "you have succesfuly reset your password"
+            }
+
++ Response 403 (application/json)
+    + Body
+
+            {
+                "message": "Provide a valid authentication token"
+            }
+            
+## Events [/api/events/]
+### create events[POST]
++ Request (application/json)
+
+            {
+                "event": "Nyamama music Festival",
+                "location": "Nakuru",
+                "category" : "relaxation",
+                "date": "2/21/2018"
+            }
+
+    + Headers
+
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsI
+            
++ Response 201 (application/json)
+
+    + Body
+
+            {
+                "event": "End of january crossover Event",
+                "location": "Nakuru",
+                "category" : "relaxation",
+                "date": "2/21/2018"
+            }
+### get all events[GET]
++ Response 201 (application/json)
+
+    + Body
+
+            {
+                "id": 1,
+                "event": "End of january crossover Event",
+                "location": "Nakuru",
+                "category" : "relaxation",
+                "date": "2/21/2018"
+            }
+        
+## Event details [/api/events/{key}/]
+
++ Parameters
+    + key (number) - ID of the Question in the form of an integer
+    
+    
+### get single event [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": 1,
+                "event": "Nyamamaama music Fetsival",
+                "location": "Nakuru",
+                "category" : "relaxation",
+                "date": "Wed, 21 Feb 2018 00:00:00 GMT"
+            }
+            
+### Update single event[PUT]
++ Request (application/json)
+
+            {
+                "event": "Nyamamaama music Fetsival",
+                "location": "Nakuru",
+                "category" : "relaxation",
+                "date": "Wed, 21 Feb 2018 00:00:00 GMT"
+            }
+            
+    + Headers
+
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsI
+            
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": 1,
+                "event": "Nyamamaama music Fetsival",
+                "location": "Nakuru",
+                "category" : "relaxation",
+                "date": "Wed, 21 Feb 2018 00:00:00 GMT"
+            }
+### Delete Single Event [DELETE]
++ Request
+    + Headers
+
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsI
+            
++ Response 204 (application/json)
+
+## RSVP [/api/events/{key}/rsvp/]
+### RSVP to an event [POST]
++ Request
+    + Headers
+
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsI
+            
++ Response 201 (application/json)
+    + Body
+
+            {
+             "message": "Thank you for registering to attend this event"
+            }
+            
++ Response 202 (application/json)
+
+    + Body
+
+            {
+             "message": "You have already RSVP'd to this event"
+            }
+            
+### Rerieve RSVP's [GET]
++ Request
+    + Headers
+
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsI
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "email": "kipu@gmail.com",
+                "name": "Jillian Dixon"
+            }
+            
+## Searching [/api/events/search/{variable}]
++ Parameters
+    + variable (q) - string search by name of event
+    
+### Search for an event [POST]
+
++ Response 201 (application/json)
+
+    + Body
+
+            [
+                {
+                    "date": "Tue, 12 Dec 2017 00:00:00 GMT",
+                    "location": "nairobi",
+                    "id": 1,
+                    "category": null,
+                    "event": "Dev Fest Nairobi"
+                }
+            ]

@@ -26,6 +26,7 @@ def get_user_input():
     event = request.data.get('event')
     location = request.data.get('location')
     category = request.data.get('category')
+    description = request.data.get('description')
     date = request.data.get('date')
 
     if event is None or not event:
@@ -49,7 +50,7 @@ def get_user_input():
     else:
         category = category
 
-    return event, location, category, date
+    return event, location, category, description, date
 
 def authentication_request():
     """Helper class that gets the access token"""
@@ -74,7 +75,9 @@ def get_response(event_query):
             'event': event.event,
             'location': event.location,
             'category': event.category,
-            'date': event.date
+            'date': event.date,
+            'description': event.description,
+            'created_by': event.created_by
         }
         response.append(obj)
     return response
@@ -86,7 +89,9 @@ def get_single_event_response(event):
         'event': event.event,
         'location': event.location,
         'category': event.category,
-        'date': event.date
+        'date': event.date,
+        'description': event.description,
+        'created_by': event.created_by
     }
     return response
 
@@ -109,7 +114,7 @@ def events_list():
     access_token = authentication_request()
     #page number variable to used in pagination
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 5, type=int)
+    limit = request.args.get('limit', 12, type=int)
 
     if access_token:
         # Attempt to decode the token and get the User ID
@@ -119,9 +124,10 @@ def events_list():
             if request.method == 'POST':
 
                 # get user input from the helper class get user input at the top
-                event, location, category, date = get_user_input()
+                event, location, category, description, date = get_user_input()
+                print(event, location, category, description, date)
 
-                inst = Events(event, location, category, date, created_by=user_id)
+                inst = Events(event, location, category, description, date, created_by=user_id)
                 inst.save()
 
                 # Get response from the helper method get_single_event()
@@ -146,7 +152,6 @@ def events_list():
     # request.method == 'GET'
     # GET all the events in the db
     all_events = Events.query.paginate(page, limit, error_out=True)
-
     # Get response object from helper method get_response()
     results = get_response(all_events)
     return results, status.HTTP_200_OK
@@ -206,12 +211,13 @@ def events_details(key):
             if request.method == 'PUT':
 
                 # get user input from the helper class get user input at the top
-                event, location, category, date = get_user_input()
+                event, location, category, description, date = get_user_input()
 
                 get_my_event.event = event
                 get_my_event.location = location
                 get_my_event.date = date
                 get_my_event.category = category
+                get_my_event.description = description
                 #save the updated event
                 get_my_event.save()
 
@@ -267,7 +273,8 @@ def rsvp_event(key):
                 if not get_event.already_rsvpd(user_id):
                     get_event.rsvp_user(user_id)
                     return {
-                        'message': "Thank you for registering to attend this event"
+                        'message': "Thank you for registering to attend this event",
+                        'isRsvpd': True
                         }, status.HTTP_201_CREATED
                 return {"message":"You have already RSVP'd to this event"}, status.HTTP_202_ACCEPTED
 

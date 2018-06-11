@@ -148,16 +148,18 @@ class Events(db.Model):
     __tablename__ = 'events_db'
 
     id = db.Column(db.Integer, primary_key=True)
-    event = db.Column(db.String(255))
-    location = db.Column(db.String(255))
-    category = db.Column(db.String(255))
+    event = db.Column(db.String(140))
+    location = db.Column(db.String(100))
+    category = db.Column(db.String(100))
+    description = db.Column(db.String(600))
     date = db.Column(db.DateTime, default=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(Users.id))
 
-    def __init__(self, event, location, category, date, created_by):
+    def __init__(self, event, location, category, description, date, created_by):
         self.event = event
         self.location = location
         self.category = category
+        self.description = description
         self.date = date
         self.created_by = created_by
 

@@ -3,6 +3,7 @@ import os
 # Third party imports
 from flask_api import FlaskAPI, status, exceptions
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS, cross_origin
 
 # local imports
 from config import app_config
@@ -12,6 +13,7 @@ db = SQLAlchemy()
 
 # Initialize the app
 app = FlaskAPI(__name__, instance_relative_config=True)
+CORS(app)
 # Load the config file
 app.config.from_object(app_config['development'])
 app.secret_key = os.getenv('SECRET')
